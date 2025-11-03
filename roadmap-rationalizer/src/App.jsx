@@ -351,7 +351,7 @@ function App() {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold font-display gold-type">
-                  Arboris: Roadmap rationzalizer
+                  Arboris: Roadmap rationalizer
                 </h1>
                 <p className="text-seafoam text-sm mt-0.5 hidden sm:block">
                   AI-Powered Decision Intelligence Platform
