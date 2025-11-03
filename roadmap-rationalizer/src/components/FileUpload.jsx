@@ -24,8 +24,8 @@ export default function FileUpload({ onFilesSelected, isLoading }) {
           relative border-2 border-dashed rounded-2xl p-10 md:p-12 text-center cursor-pointer
           transition-all duration-300 group
           ${isDragActive 
-            ? 'border-primary-500 bg-primary-50 scale-[1.02]' 
-            : 'border-neutral-300 hover:border-primary-400 bg-neutral-50/50 hover:bg-white hover:shadow-soft'
+            ? 'border-[rgba(67,160,137,0.85)] bg-[rgba(15,107,92,0.38)] scale-[1.02]' 
+            : 'border-[rgba(67,160,137,0.35)] hover:border-[rgba(67,160,137,0.6)] bg-[rgba(7,27,23,0.55)] hover:bg-[rgba(11,61,52,0.65)] hover:shadow-satin'
           }
           ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -33,13 +33,13 @@ export default function FileUpload({ onFilesSelected, isLoading }) {
         <input {...getInputProps()} disabled={isLoading} />
         
         {/* Decorative Background Elements */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary-50/30 to-secondary-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-[radial-gradient(60%_60%_at_50%_40%,rgba(26,138,116,0.35)_0%,rgba(11,61,52,0.2)_55%,rgba(7,27,23,0.6)_100%)]" />
         
         <div className="relative z-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 border border-[rgba(67,160,137,0.45)] bg-[rgba(7,27,23,0.65)]">
             <svg
               className={`h-8 w-8 transition-colors duration-300 ${
-                isDragActive ? 'text-primary-600' : 'text-neutral-500 group-hover:text-primary-600'
+                isDragActive ? 'text-gold-base' : 'text-seafoam group-hover:text-gold-base'
               }`}
               stroke="currentColor"
               fill="none"
@@ -56,16 +56,16 @@ export default function FileUpload({ onFilesSelected, isLoading }) {
           
           <div className="space-y-2">
             {isDragActive ? (
-              <p className="text-lg font-semibold text-primary-700">Drop your files here</p>
+              <p className="text-lg font-semibold text-gold-base">Drop your files here</p>
             ) : (
               <>
-                <p className="text-lg font-semibold text-neutral-900">
+                <p className="text-lg font-semibold text-fog">
                   {isLoading 
                     ? 'Processing your files...' 
                     : 'Upload your strategic documents'}
                 </p>
-                <p className="text-sm text-neutral-600 max-w-md mx-auto">
-                  Drag & drop your files here, or <span className="text-primary-600 font-medium">click to browse</span>
+                <p className="text-sm text-seafoam max-w-md mx-auto">
+                  Drag & drop your files here, or <span className="text-gold-base font-medium">click to browse</span>
                 </p>
               </>
             )}
@@ -73,16 +73,16 @@ export default function FileUpload({ onFilesSelected, isLoading }) {
 
           {!isDragActive && !isLoading && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs">
-              <span className="px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-neutral-600 font-medium shadow-sm">
+              <span className="px-3 py-1.5 rounded-lg font-medium border border-[rgba(67,160,137,0.45)] text-seafoam bg-[rgba(7,27,23,0.6)]">
                 .txt
               </span>
-              <span className="px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-neutral-600 font-medium shadow-sm">
+              <span className="px-3 py-1.5 rounded-lg font-medium border border-[rgba(67,160,137,0.45)] text-seafoam bg-[rgba(7,27,23,0.6)]">
                 .md
               </span>
-              <span className="px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-neutral-600 font-medium shadow-sm">
+              <span className="px-3 py-1.5 rounded-lg font-medium border border-[rgba(67,160,137,0.45)] text-seafoam bg-[rgba(7,27,23,0.6)]">
                 .json
               </span>
-              <span className="px-3 py-1.5 bg-white border border-neutral-200 rounded-lg text-neutral-600 font-medium shadow-sm">
+              <span className="px-3 py-1.5 rounded-lg font-medium border border-[rgba(67,160,137,0.45)] text-seafoam bg-[rgba(7,27,23,0.6)]">
                 .pdf
               </span>
             </div>

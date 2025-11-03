@@ -58,19 +58,19 @@ function RoadmapPlan({ branches, context, decisionYear }) {
 
   if (error) {
     return (
-      <div className="card p-8 bg-red-50 border-red-200">
+      <div className="card p-8 bg-[rgba(213,75,75,0.18)] border border-[rgba(213,75,75,0.55)]">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 bg-[rgba(213,75,75,0.25)] rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-red-900 mb-2">Error Generating Recommendations</h3>
-            <p className="text-red-700 text-sm">{error}</p>
+            <h3 className="text-lg font-semibold text-error mb-2">Error Generating Recommendations</h3>
+            <p className="text-seafoam text-sm">{error}</p>
             <button
               onClick={loadRecommendations}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="mt-4 btn-gold"
             >
               Try Again
             </button>
@@ -83,7 +83,7 @@ function RoadmapPlan({ branches, context, decisionYear }) {
   if (!recommendations) {
     return (
       <div className="card p-8">
-        <p className="text-neutral-600 text-center">No recommendations available yet.</p>
+        <p className="text-seafoam text-center">No recommendations available yet.</p>
       </div>
     );
   }
@@ -132,56 +132,62 @@ function RoadmapPlan({ branches, context, decisionYear }) {
       {sequencedDecisions.length > 0 && (
         <div className="card p-8">
           <div className="flex items-center justify-between gap-4 mb-6">
-            <h3 className="text-xl font-bold text-neutral-900 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-secondary-600 to-primary-600 rounded-xl flex items-center justify-center text-white">
+            <h3 className="text-xl font-bold text-fog flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center branch-depth bg-[linear-gradient(145deg,#1A8A74,#0F6B5C)] text-gold-base">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               Sequenced Business Decisions
             </h3>
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Starting {displayYear}</span>
+            <span className="text-xs font-semibold text-muted uppercase tracking-[0.2em]">Starting {displayYear}</span>
           </div>
           <div className="relative pl-6">
-            <div className="absolute left-3 top-2 bottom-2 w-px bg-neutral-200" aria-hidden="true" />
+            <div className="absolute left-3 top-2 bottom-2 w-px bg-[rgba(67,160,137,0.45)]" aria-hidden="true" />
             {sequencedDecisions.map((item, index) => {
-              const badgeColor = ['bg-primary-600', 'bg-secondary-600', 'bg-amber-600', 'bg-emerald-600'][index % 4];
+              const badgeStyles = [
+                'bg-[rgba(212,175,55,0.9)] text-[#1a1a1a]',
+                'bg-[rgba(37,183,138,0.9)] text-fog',
+                'bg-[rgba(67,160,137,0.9)] text-fog',
+                'bg-[rgba(130,195,255,0.9)] text-[#041512]'
+              ];
+              const badgeClass = badgeStyles[index % badgeStyles.length];
               return (
                 <div key={`${item.sequence}-${item.decision}`} className="relative pb-8 last:pb-0">
-                  <div className={`absolute -left-3 top-1 w-6 h-6 ${badgeColor} text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm`}>{item.sequence ?? index + 1}</div>
-                  <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-5">
+                  <div className={`absolute -left-3 top-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-satin ${badgeClass}`}>{item.sequence ?? index + 1}</div>
+                  <div className="bg-[rgba(7,27,23,0.6)] border border-[rgba(19,68,59,0.55)] rounded-xl p-5">
                     <div className="flex flex-wrap items-center gap-3 mb-3">
-                      <span className="text-sm font-semibold text-neutral-900">
+                      <span className="text-sm font-semibold text-fog">
                         {item.year ?? displayYear}{item.quarter ? ` · ${item.quarter}` : ''}
                       </span>
-                      <span className="px-2 py-1 text-xs font-semibold bg-primary-100 text-primary-700 rounded-lg uppercase tracking-wide">
+                      <span className="px-2 py-1 text-xs font-semibold rounded-lg uppercase tracking-[0.18em] bg-[rgba(67,160,137,0.22)] text-success border border-[rgba(67,160,137,0.55)]">
                         {item.decision || 'Strategic Decision'}
                       </span>
                     </div>
                     {item.description && (
-                      <p className="text-sm text-neutral-700 mb-4 leading-relaxed">{item.description}</p>
+                      <p className="text-sm text-seafoam mb-4 leading-relaxed">{item.description}</p>
                     )}
                     {item.linkedRisk && (
                       <div className="mb-4">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
-                          <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-muted uppercase tracking-[0.18em] mb-2">
+                          <svg className="w-4 h-4 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
                           Linked Risk Mitigated
                         </div>
-                        <div className="bg-white border border-amber-200 rounded-lg p-3 text-sm text-amber-900 space-y-1">
-                          <div className="font-semibold">
+                        <div className="bg-[rgba(7,27,23,0.55)] border border-[rgba(212,175,55,0.55)] rounded-lg p-3 text-sm text-gold-base space-y-1">
+                          <div className="font-semibold text-fog">
                             {item.linkedRisk.branch || 'Referenced Branch'} · {item.linkedRisk.riskDimension || 'Risk'} ({item.linkedRisk.severity || 'MEDIUM'})
                           </div>
                           {item.linkedRisk.riskStatement && (
-                            <p className="text-amber-800 leading-relaxed">{item.linkedRisk.riskStatement}</p>
+                            <p className="text-seafoam leading-relaxed">{item.linkedRisk.riskStatement}</p>
                           )}
                         </div>
                       </div>
                     )}
                     {item.mitigationRationale && (
-                      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-900">
-                        <span className="font-semibold uppercase tracking-wide text-xs text-emerald-700 block mb-1">Mitigation Justification</span>
+                      <div className="bg-[rgba(7,27,23,0.55)] border border-[rgba(37,183,138,0.55)] rounded-lg p-3 text-sm text-seafoam">
+                        <span className="font-semibold uppercase tracking-[0.18em] text-xs text-success block mb-1">Mitigation Justification</span>
                         <p className="leading-relaxed">{item.mitigationRationale}</p>
                       </div>
                     )}

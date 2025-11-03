@@ -6,7 +6,7 @@ export default function OptionTree({ branches, context, viewMode }) {
   if (!branches || branches.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No branches to display yet. Upload files to start analysis.</p>
+        <p className="text-seafoam">No branches to display yet. Upload files to start analysis.</p>
       </div>
     );
   }

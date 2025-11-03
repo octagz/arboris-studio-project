@@ -161,39 +161,6 @@ Manufacturing scale-up requires successful coordination with 4-5 critical comple
    - Must develop TFT backplanes compatible with E Ink's process
    - Estimated success probability: 75% (significant technical challenges)
 
-#### Joint Probability Calculation
-**Joint Success Probability = 0.70 × 0.85 × 0.80 × 0.75 = 35.7%**
-
-Even with relatively high individual success rates, the multiplicative effect means there's only a 36% chance all partners deliver successfully. This represents extreme interdependence risk.
-
-#### Weak Link Analysis
-**Critical Weak Links:**
-- **Equipment manufacturers** (70% success): Custom equipment development is the most fragile dependency. If equipment suppliers cannot solve engineering challenges, the entire manufacturing scale-up stalls regardless of E Ink's internal progress.
-- **Backplane manufacturers** (75% success): TFT integration is technically complex and could become a bottleneck for advanced display applications.
-
-#### Delay Factors
-- **Equipment suppliers**: Development timelines may slip due to unforeseen technical challenges; some suppliers may lack sufficient R&D budget or face their own financial constraints
-- **Material suppliers**: Regulatory approval delays for new materials or formulations; quality consistency issues during their own scale-up
-- **Backplane manufacturers**: Yield challenges in TFT production; process compatibility issues discovered late in development
-- **Incentive misalignment**: Partners may deprioritize E Ink's project if larger customers offer more attractive opportunities
-
-### 2. Supply Chain Risk Assessment
-
-#### Supplier Reliability
-- Material suppliers are primarily chemical companies with established operations (medium-high reliability)
-- Equipment manufacturers would be smaller specialized firms with less financial cushion (medium risk)
-- Geographic concentration in Asia creates supply chain vulnerability
-
-#### Material Availability
-- Some specialty chemicals (specific titanium dioxide grades, encapsulation polymers) have limited suppliers
-- Single-source dependencies exist for certain microcapsule formulations
-- Potential for supply constraints if competing display technologies (e-readers, signage) also scale simultaneously
-
-#### Manufacturing Partner Risks (if EMS model)
-- Contract manufacturers (Flex, Jabil, etc.) have capacity but lack experience with this specific technology
-- Technology transfer to EMS partners could be lengthy (12-18 months) and risk IP leakage
-- EMS partners may require minimum volume commitments that E Ink cannot initially guarantee
-
 **Key Mitigation Strategies:**
 - Develop dual-source relationships for critical materials where possible
 - Co-invest in equipment development with manufacturers to align incentives and accelerate timelines
@@ -252,48 +219,6 @@ export const mockValueCaptureRisks = {
 **Cumulative Adoption Timeline: 27-48 months from manufacturing readiness to end-consumer scale**
 
 This extended timeline creates significant financial and competitive exposure. Even after manufacturing scale-up is complete, nearly 2-4 additional years are required before meaningful revenue realization.
-
-### 2. Competitive Dynamics
-
-#### Competitive Landscape
-- **LCD Incumbents**: Sharp, Samsung, LG with mature manufacturing, established supply chains, and strong OEM relationships
-- **Emerging E-paper competitors**: Potential entrants from Taiwan/Korea with manufacturing expertise
-- **Alternative Technologies**: Reflective LCD, MEMS-based displays, electrowetting displays
-
-#### Incumbent Response Risk
-**HIGH Risk**: LCD manufacturers are likely to view e-paper as a threat to their signage and portable display businesses. Potential responses:
-- Aggressive pricing to protect market share
-- Lobbying OEMs to avoid E Ink (highlighting manufacturing risk/unproven reliability)
-- Fast-follower strategy: License or acquire competing e-paper technology
-- Vertical foreclosure: LCD suppliers are also component suppliers to potential E Ink customers—could threaten supply interruptions
-
-#### Differentiation Sustainability
-**MEDIUM Risk**: Core e-paper patents provide some protection, but manufacturing processes could potentially be reverse-engineered or designed around. Once manufacturing is proven at scale, fast followers with deeper pockets could enter quickly.
-
-#### Barriers to Entry (For E Ink)
-**HIGH**: Entering established display markets requires:
-- Overcoming incumbent relationships with OEMs
-- Building brand credibility and reputation (E Ink is unknown brand)
-- Achieving price competitiveness despite lower volumes
-- Providing full ecosystem support (drivers, reference designs, technical support)
-
-### 3. Market Viability
-
-#### TAM/SAM/SOM Assessment
-- **Total Addressable Market (TAM)**: $8-12B (retail signage, e-readers, portable displays)
-- **Serviceable Available Market (SAM)**: $2-4B (segments where e-paper advantages are clear)
-- **Serviceable Obtainable Market (SOM)**: $100-300M in first 3-5 years (conservative given adoption barriers)
-
-Reality check: Achieving even $100M revenue requires capturing significant OEM accounts and overcoming multiple adoption hurdles.
-
-#### Customer Value Proposition
-**Compelling but unproven at scale**: Ultra-low power, sunlight readability, and flexibility are strong benefits for target applications. However, end-user willingness to accept trade-offs (refresh rate, color limitations) is unvalidated. Early product failures could permanently damage market perception.
-
-#### Pricing Power
-**LOW initially**: As new entrant with unproven manufacturing, E Ink has limited pricing power. OEMs will expect discounts to compensate for adoption risk. Must likely price below LCD on $/square-inch basis initially despite higher costs, compressing margins.
-
-#### Market Timing
-**MODERATE Risk**: E-reader market is emerging (Amazon Kindle in development) creating a window of opportunity. However, if manufacturing scale-up takes too long, LCD technology improvements or alternative technologies could close the window.
 
 **Key Mitigation Strategies:**
 - Secure one or two anchor OEM customers early with co-development agreements to accelerate adoption

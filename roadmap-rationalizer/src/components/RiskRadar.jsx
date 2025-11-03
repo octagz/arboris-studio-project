@@ -9,7 +9,7 @@ export default function RiskRadar({ branches, context }) {
   if (!branches || branches.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No branches to display yet. Upload files to start analysis.</p>
+        <p className="text-seafoam">No branches to display yet. Upload files to start analysis.</p>
       </div>
     );
   }
@@ -274,7 +274,7 @@ export default function RiskRadar({ branches, context }) {
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-3xl shadow-soft-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slide-up"
+            className="bg-[rgba(7,27,23,0.9)] border border-[rgba(19,68,59,0.55)] rounded-3xl shadow-satin max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -287,7 +287,7 @@ export default function RiskRadar({ branches, context }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-soft"
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white branch-depth"
                     style={{ backgroundColor: getRiskColor(selectedRisk.riskLevel) }}
                   >
                     {selectedRisk.id}
@@ -315,7 +315,7 @@ export default function RiskRadar({ branches, context }) {
                 </div>
                 <button
                   onClick={closeModal}
-                  className="text-neutral-400 hover:text-neutral-700 transition-colors p-2.5 hover:bg-neutral-100 rounded-xl"
+                className="text-seafoam hover:text-fog transition-colors p-2.5 hover:bg-[rgba(11,61,52,0.65)] rounded-xl"
                   aria-label="Close"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -414,10 +414,10 @@ export default function RiskRadar({ branches, context }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-neutral-200 bg-white flex justify-end">
+            <div className="p-6 border-t border-[rgba(19,68,59,0.55)] bg-[rgba(7,27,23,0.8)] flex justify-end">
               <button
                 onClick={closeModal}
-                className="btn-primary"
+                className="btn-emerald"
               >
                 Close
               </button>

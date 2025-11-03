@@ -1,4 +1,320 @@
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+const RISK_LEVEL_STYLES = {
+  HIGH: 'rr-risk-high',
+  MEDIUM: 'rr-risk-medium',
+  LOW: 'rr-risk-low',
+};
+
+const REPORT_STYLES = `
+  :root {
+    color-scheme: only light;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f0f4f5;
+  }
+
+  .rr-report-root {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    color: #1f2937;
+    background: #ffffff;
+  }
+
+  .rr-title {
+    color: #0f172a;
+    border-bottom: 3px solid #2563eb;
+    padding-bottom: 12px;
+    margin: 0 0 12px;
+    font-size: 32px;
+  }
+
+  .rr-timestamp {
+    color: #64748b;
+    font-size: 13px;
+    margin: 4px 0;
+  }
+
+  .rr-section-heading {
+    color: #111827;
+    font-size: 22px;
+    margin: 36px 0 12px;
+  }
+
+  .rr-body-text {
+    font-size: 15px;
+    color: #334155;
+    margin: 0 0 18px;
+  }
+
+  .rr-context {
+    background: #f8fafc;
+    border-left: 4px solid #2563eb;
+    padding: 18px 22px;
+    border-radius: 10px;
+    margin-top: 24px;
+  }
+
+  .rr-context .rr-body-text {
+    margin-bottom: 0;
+  }
+
+  .rr-branch-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 26px 0;
+    background: #f8fafc;
+  }
+
+  .rr-branch-card h2 {
+    color: #0f172a;
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .rr-branch-card p {
+    margin: 0 0 10px;
+    color: #334155;
+  }
+
+  .rr-risk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .rr-risk-high {
+    background: #ef4444;
+  }
+
+  .rr-risk-medium {
+    background: #f59e0b;
+  }
+
+  .rr-risk-low {
+    background: #10b981;
+  }
+
+  .rr-risk-dimensions {
+    margin: 18px 0;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .rr-risk-dimensions span {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    font-size: 13px;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .rr-risk-section {
+    margin: 18px 0;
+    padding: 16px 18px;
+    background: #ffffff;
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+  }
+
+  .rr-risk-section strong {
+    display: block;
+    font-size: 14px;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+
+  .rr-risk-section p {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .rr-risk-section p:last-child {
+    margin-bottom: 0;
+  }
+
+  .rr-mitigation {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+    padding: 16px 18px;
+    border-radius: 10px;
+    margin-top: 18px;
+  }
+
+  .rr-mitigation strong {
+    display: block;
+    font-size: 14px;
+    color: #065f46;
+    margin-bottom: 8px;
+  }
+
+  .rr-mitigation ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+    color: #0f172a;
+  }
+
+  .rr-multiline {
+    white-space: pre-line;
+  }
+
+  .rr-divider {
+    margin: 48px 0 24px;
+    border: none;
+    border-top: 2px solid #e2e8f0;
+  }
+
+  .rr-footer {
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+  }
+`;
+
+const DIMENSION_LABELS = {
+  financial: '💰 Financial',
+  technical: '⚙️ Technical',
+  organizational: '👥 Organizational',
+  ecosystem: '🌐 Ecosystem',
+};
+
+const DECISION_YEAR_FALLBACK = 2025;
+
+const formatMitigationList = (mitigation) => {
+  if (!Array.isArray(mitigation) || mitigation.length === 0) {
+    return '<p class="rr-body-text">No mitigation strategies documented yet.</p>';
+  }
+
+  return `<ul>${mitigation.map((item) => `<li>${item}</li>`).join('')}</ul>`;
+};
+
+const renderRiskDimensions = (dimensions) => {
+  if (!dimensions) {
+    return '';
+  }
+
+  const entries = Object.entries(dimensions)
+    .filter(([, value]) => value)
+    .map(([key, value]) => `<span>${DIMENSION_LABELS[key] || key}: <strong>${value}</strong></span>`);
+
+  if (entries.length === 0) {
+    return '';
+  }
+
+  return `<div class="rr-risk-dimensions">
+    <strong style="width: 100%; color: #0f172a; font-size: 14px;">Dimensional Risk Assessment</strong>
+    ${entries.join('')}
+  </div>`;
+};
+
+const renderRiskAnalyses = (analyses) => {
+  if (!analyses) {
+    return '';
+  }
+
+  const segments = Object.entries(analyses)
+    .filter(([, value]) => value)
+    .map(([key, value]) => `<p class="rr-multiline"><strong>${DIMENSION_LABELS[key] || key}:</strong><br>${value}</p>`);
+
+  if (segments.length === 0) {
+    return '';
+  }
+
+  return `<div class="rr-risk-section">
+    <strong>Detailed Risk Breakdown</strong>
+    <div>
+      ${segments.join('')}
+    </div>
+  </div>`;
+};
+
+const renderBranchCard = (branch, index) => {
+  const riskLevel = branch?.riskLevel || 'MEDIUM';
+  const badgeClass = RISK_LEVEL_STYLES[riskLevel] || RISK_LEVEL_STYLES.MEDIUM;
+
+  return `<section class="rr-branch-card">
+    <h2>Branch ${index + 1}: ${branch?.name || 'Unnamed Branch'}</h2>
+    ${branch?.description ? `<p class="rr-multiline"><em>${branch.description}</em></p>` : ''}
+    <div style="margin: 12px 0 6px;">
+      <strong>Overall Risk Level:</strong>
+      <span class="rr-risk-badge ${badgeClass}">${riskLevel}</span>
+    </div>
+    ${renderRiskDimensions(branch?.riskDimensions)}
+    <div class="rr-risk-section">
+      <strong>Strategic Assessment</strong>
+      <p class="rr-multiline">${branch?.reasoning || 'Risk analysis in progress...'}</p>
+    </div>
+    ${renderRiskAnalyses(branch?.riskAnalyses)}
+    <div class="rr-mitigation">
+      <strong>Mitigation Strategies</strong>
+      ${formatMitigationList(branch?.mitigation)}
+    </div>
+  </section>`;
+};
+
+const buildReportBody = (data = {}) => {
+  const { context = '', branches = [], decisionYear } = data;
+  const decisionYearValue = decisionYear ?? DECISION_YEAR_FALLBACK;
+
+  const contextSection = context
+    ? `<section class="rr-context">
+        <h2 class="rr-section-heading" style="margin-top: 0;">Context Overview</h2>
+        <p class="rr-body-text rr-multiline">${context}</p>
+      </section>`
+    : '';
+
+  const branchCards = branches.length > 0
+    ? branches.map((branch, index) => renderBranchCard(branch, index)).join('')
+    : '<p class="rr-body-text">No branch analyses are available yet.</p>';
+
+  return `<div class="rr-report-root">
+    <header>
+      <h1 class="rr-title">Roadmap Risk Analysis Report</h1>
+      <p class="rr-timestamp">Generated: ${new Date().toLocaleString()}</p>
+      <p class="rr-timestamp">Decision Year: ${decisionYearValue}</p>
+    </header>
+    ${contextSection}
+    <section>
+      <h2 class="rr-section-heading">Executive Summary</h2>
+      <p class="rr-body-text">
+        This report analyzes the risk profile of ${branches.length} decision ${branches.length === 1 ? 'branch' : 'branches'} for the product roadmap.
+        Each branch has been evaluated across four risk dimensions: Financial, Technical, Organizational, and Ecosystem (partner and market exposure).
+      </p>
+    </section>
+    ${branchCards}
+    <hr class="rr-divider" />
+    <footer>
+      <p class="rr-footer">Report generated by Roadmap Rationalizer</p>
+    </footer>
+  </div>`;
+};
 
 /**
  * Exports the analysis as an HTML report
@@ -6,237 +322,72 @@ import jsPDF from 'jspdf';
  * @returns {string} - HTML string
  */
 export function exportHTMLReport(data) {
-  const { context, branches, analysis, decisionYear } = data;
-  const decisionYearValue = decisionYear ?? 2025;
+  const reportBody = buildReportBody(data);
 
-  const riskColor = {
-    HIGH: '#ef4444',
-    MEDIUM: '#f59e0b',
-    LOW: '#10b981',
-  };
-
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roadmap Risk Analysis Report</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      line-height: 1.6;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-      color: #333;
-    }
-    h1 {
-      color: #1f2937;
-      border-bottom: 3px solid #3b82f6;
-      padding-bottom: 10px;
-    }
-    h2 {
-      color: #374151;
-      margin-top: 30px;
-    }
-    .branch-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 20px 0;
-      background: #f9fafb;
-    }
-    .risk-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-weight: bold;
-      font-size: 14px;
-      color: white;
-    }
-    .risk-high { background: ${riskColor.HIGH}; }
-    .risk-medium { background: ${riskColor.MEDIUM}; }
-    .risk-low { background: ${riskColor.LOW}; }
-    .risk-section {
-      margin: 15px 0;
-      padding: 10px;
-      background: white;
-      border-left: 4px solid #3b82f6;
-    }
-    .mitigation {
-      background: #ecfdf5;
-      border-left: 4px solid #10b981;
-      padding: 10px;
-      margin: 10px 0;
-    }
-    .mitigation ul {
-      margin: 5px 0;
-      padding-left: 20px;
-    }
-    .timestamp {
-      color: #6b7280;
-      font-size: 14px;
-    }
-  </style>
+  <style>${REPORT_STYLES}</style>
 </head>
 <body>
-  <h1>Roadmap Risk Analysis Report</h1>
-  <p class="timestamp">Generated: ${new Date().toLocaleString()}</p>
-  <p class="timestamp">Decision Year: ${decisionYearValue}</p>
-
-  <h2>Executive Summary</h2>
-  <p>This report analyzes the risk profile of ${branches.length} decision branches for the product roadmap. Each branch has been evaluated across four risk dimensions: Financial, Technical, Organizational, and Ecosystem (partner and market exposure).</p>
-
-  ${branches.map((branch, index) => `
-    <div class="branch-card">
-      <h2>Branch ${index + 1}: ${branch.name}</h2>
-      <p><em>${branch.description}</em></p>
-      
-      <div>
-        <strong>Overall Risk Level: </strong>
-        <span class="risk-badge risk-${branch.riskLevel?.toLowerCase()}">
-          ${branch.riskLevel || 'MEDIUM'}
-        </span>
-      </div>
-
-      ${branch.riskDimensions ? `
-      <div style="margin: 15px 0; padding: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 6px;">
-        <strong>Dimensional Risk Assessment:</strong>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-          <span style="padding: 4px 8px; border-radius: 4px; background: #f3f4f6; font-size: 13px;">
-            💰 Financial: <strong>${branch.riskDimensions.financial}</strong>
-          </span>
-          <span style="padding: 4px 8px; border-radius: 4px; background: #f3f4f6; font-size: 13px;">
-            ⚙️ Technical: <strong>${branch.riskDimensions.technical}</strong>
-          </span>
-          <span style="padding: 4px 8px; border-radius: 4px; background: #f3f4f6; font-size: 13px;">
-            👥 Organizational: <strong>${branch.riskDimensions.organizational}</strong>
-          </span>
-          <span style="padding: 4px 8px; border-radius: 4px; background: #f3f4f6; font-size: 13px;">
-            🌐 Ecosystem: <strong>${branch.riskDimensions.ecosystem}</strong>
-          </span>
-        </div>
-      </div>
-      ` : ''}
-
-      <div class="risk-section">
-        <strong>Strategic Assessment:</strong>
-        <p>${branch.reasoning || 'Risk analysis in progress...'}</p>
-      </div>
-
-      <div class="risk-section">
-        <strong>Detailed Risk Breakdown:</strong>
-        <div style="margin-left: 20px;">
-          <p><strong>Financial:</strong><br>${branch.riskAnalyses?.financial || 'Analysis pending...'}</p>
-          <p><strong>Technical:</strong><br>${branch.riskAnalyses?.technical || 'Analysis pending...'}</p>
-          <p><strong>Organizational:</strong><br>${branch.riskAnalyses?.organizational || 'Analysis pending...'}</p>
-          <p><strong>Ecosystem:</strong><br>${branch.riskAnalyses?.ecosystem || 'Analysis pending...'}</p>
-        </div>
-      </div>
-
-      <div class="mitigation">
-        <strong>Mitigation Strategies:</strong>
-        <ul>
-          ${(branch.mitigation || []).map(m => `<li>${m}</li>`).join('')}
-        </ul>
-      </div>
-    </div>
-  `).join('')}
-
-  <hr style="margin: 40px 0; border: none; border-top: 2px solid #e5e7eb;">
-  <p style="text-align: center; color: #6b7280; font-size: 14px;">
-    Report generated by Roadmap Rationalizer
-  </p>
+${reportBody}
 </body>
-</html>
-  `;
+</html>`;
 }
 
 /**
- * Exports the analysis as a PDF
+ * Exports the analysis as a PDF document using the HTML report structure
  * @param {Object} data - Analysis data
  */
-export function exportPDFReport(data) {
-  const { context, branches, decisionYear } = data;
-  const decisionYearValue = decisionYear ?? 2025;
-  const doc = new jsPDF();
-  
-  const riskColor = {
-    HIGH: [239, 68, 68],
-    MEDIUM: [245, 158, 11],
-    LOW: [16, 185, 129],
-  };
+export async function exportPDFReport(data) {
+  if (typeof window === 'undefined') {
+    throw new Error('PDF export is only available in a browser environment.');
+  }
 
-  let yPosition = 20;
+  const reportBody = buildReportBody(data);
+  const container = document.createElement('div');
+  container.className = 'rr-pdf-export-container';
+  container.style.position = 'fixed';
+  container.style.left = '0';
+  container.style.top = '-10000px';
+  container.style.width = '900px';
+  container.style.padding = '32px 40px';
+  container.style.backgroundColor = '#ffffff';
+  container.style.zIndex = '-1';
+  container.style.opacity = '0';
+  container.style.pointerEvents = 'none';
+  container.innerHTML = `<style>${REPORT_STYLES}</style>${reportBody}`;
 
-  // Title
-  doc.setFontSize(20);
-  doc.text('Roadmap Risk Analysis Report', 20, yPosition);
-  yPosition += 10;
-  
-  doc.setFontSize(11);
-  doc.setTextColor(107, 114, 128);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, 20, yPosition);
-  yPosition += 6;
-  doc.text(`Decision Year: ${decisionYearValue}`, 20, yPosition);
-  yPosition += 9;
+  document.body.appendChild(container);
 
-  // Summary
-  doc.setFontSize(14);
-  doc.setTextColor(55, 65, 81);
-  doc.text('Executive Summary', 20, yPosition);
-  yPosition += 8;
+  if (!window.html2canvas) {
+    window.html2canvas = html2canvas;
+  }
 
-  doc.setFontSize(11);
-  doc.setTextColor(51, 51, 51);
-  doc.text(
-    `This report analyzes the risk profile of ${branches.length} decision branches for the product roadmap. Each branch has been evaluated across four dimensions: Financial, Technical, Organizational, and Ecosystem risk.`,
-    20, yPosition, { maxWidth: 170 }
-  );
-  yPosition += 20;
+  try {
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const marginX = 36;
+    const marginY = 36;
+    const availableWidth = doc.internal.pageSize.getWidth() - marginX * 2;
 
-  // Branches
-  branches.forEach((branch, index) => {
-    // Check if we need a new page
-    if (yPosition > 270) {
-      doc.addPage();
-      yPosition = 20;
-    }
+    await doc.html(container, {
+      x: marginX,
+      y: marginY,
+      width: availableWidth,
+      windowWidth: 900,
+      autoPaging: 'text',
+      html2canvas: {
+        scale: 0.82,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      },
+    });
 
-    // Branch header
-    doc.setFontSize(14);
-    doc.setTextColor(55, 65, 81);
-    doc.text(`Branch ${index + 1}: ${branch.name}`, 20, yPosition);
-    yPosition += 8;
-
-    // Description
-    doc.setFontSize(10);
-    doc.setTextColor(107, 114, 128);
-    doc.text(branch.description, 20, yPosition, { maxWidth: 170 });
-    yPosition += 10;
-
-    // Risk level
-    doc.setFontSize(11);
-    doc.setTextColor(51, 51, 51);
-    doc.text('Overall Risk Level: ', 20, yPosition);
-    
-    const riskLevel = branch.riskLevel || 'MEDIUM';
-    doc.setTextColor(...riskColor[riskLevel]);
-    doc.text(riskLevel, 70, yPosition);
-    yPosition += 10;
-
-    // Reasoning
-    const reasoning = branch.reasoning || 'Risk analysis in progress...';
-    const reasoningLines = doc.splitTextToSize(reasoning, 170);
-    doc.setTextColor(51, 51, 51);
-    doc.setFontSize(10);
-    doc.text('Risk Reasoning:', 20, yPosition);
-    yPosition += 6;
-    doc.text(reasoningLines, 20, yPosition);
-    yPosition += reasoningLines.length * 5 + 10;
-  });
-
-  doc.save('roadmap-risk-analysis.pdf');
+    doc.save('roadmap-risk-analysis.pdf');
+  } finally {
+    document.body.removeChild(container);
+  }
 }
-

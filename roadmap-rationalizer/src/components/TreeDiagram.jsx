@@ -7,6 +7,16 @@ const SEVERITY_RANK = {
   HIGH: 2,
 };
 
+const GOLD_BASE = '#D4AF37';
+const GOLD_HI = '#F2D48F';
+const GOLD_LO = '#9D7A1F';
+const EMERALD_DARK = '#0B3D34';
+const EMERALD_MID = '#1A8A74';
+const EMERALD_LIGHT = '#43A089';
+const SUCCESS_MINT = '#25B78A';
+const TEXT_FOG = '#EAF2F1';
+const TEXT_SEAFOAM = '#C7E0DA';
+
 const normalizeLevel = (value) => {
   if (!value || typeof value !== 'string') return null;
   const normalized = value.trim().toUpperCase();
@@ -46,48 +56,90 @@ const pickSeverity = (...levels) => {
 
 const RISK_TYPE_STYLES = {
   financial: {
-    border: '#10b981',
-    selectedBg: '#d1fae5',
-    headerGradient: 'bg-gradient-to-r from-emerald-50 to-emerald-100',
-    titleClass: 'text-emerald-900',
+    border: GOLD_BASE,
+    selectedBg: 'rgba(212,175,55,0.22)',
+    headerGradient: 'bg-[radial-gradient(120%_120%_at_0%_0%,rgba(212,175,55,0.3),rgba(7,27,23,0.85))]',
+    titleClass: 'text-gold-base',
   },
   technical: {
-    border: '#3b82f6',
-    selectedBg: '#dbeafe',
-    headerGradient: 'bg-gradient-to-r from-blue-50 to-blue-100',
-    titleClass: 'text-blue-900',
+    border: EMERALD_LIGHT,
+    selectedBg: 'rgba(67,160,137,0.24)',
+    headerGradient: 'bg-[radial-gradient(120%_120%_at_0%_0%,rgba(67,160,137,0.28),rgba(7,27,23,0.85))]',
+    titleClass: 'text-emerald-400',
   },
   organizational: {
-    border: '#8b5cf6',
-    selectedBg: '#ede9fe',
-    headerGradient: 'bg-gradient-to-r from-purple-50 to-purple-100',
-    titleClass: 'text-purple-900',
+    border: SUCCESS_MINT,
+    selectedBg: 'rgba(37,183,138,0.22)',
+    headerGradient: 'bg-[radial-gradient(120%_120%_at_0%_0%,rgba(37,183,138,0.28),rgba(7,27,23,0.85))]',
+    titleClass: 'text-success',
   },
   ecosystem: {
-    border: '#f97316',
-    selectedBg: '#ffedd5',
-    headerGradient: 'bg-gradient-to-r from-amber-50 to-amber-100',
-    titleClass: 'text-amber-900',
+    border: GOLD_LO,
+    selectedBg: 'rgba(157,122,31,0.26)',
+    headerGradient: 'bg-[radial-gradient(120%_120%_at_0%_0%,rgba(157,122,31,0.32),rgba(7,27,23,0.85))]',
+    titleClass: 'text-gold-base',
   },
 };
 
+const getRiskColor = (level) => {
+  switch (level?.toUpperCase()) {
+    case 'HIGH':
+      return {
+        bg: 'rgba(190,70,70,0.3)',
+        border: '#C03A3A',
+        text: '#F7E2E2',
+        badgeBg: '#D95454',
+        badgeBorder: '#A53030',
+        badgeText: '#1A1A1A',
+      };
+    case 'MEDIUM':
+      return {
+        bg: 'rgba(212,175,55,0.26)',
+        border: GOLD_BASE,
+        text: TEXT_FOG,
+        badgeBg: GOLD_BASE,
+        badgeBorder: GOLD_LO,
+        badgeText: '#1A1A1A',
+      };
+    case 'LOW':
+      return {
+        bg: 'rgba(37,183,138,0.3)',
+        border: SUCCESS_MINT,
+        text: TEXT_FOG,
+        badgeBg: SUCCESS_MINT,
+        badgeBorder: '#177C5F',
+        badgeText: TEXT_FOG,
+      };
+    default:
+      return {
+        bg: 'rgba(67,160,137,0.28)',
+        border: EMERALD_MID,
+        text: TEXT_FOG,
+        badgeBg: EMERALD_LIGHT,
+        badgeBorder: EMERALD_MID,
+        badgeText: TEXT_FOG,
+      };
+  }
+};
+
 function RiskDetailsPanel({ selectedRisk, onExpand }) {
+  const levelColors = selectedRisk ? getRiskColor(selectedRisk.level) : null;
   return (
-    <aside className="w-96 flex-shrink-0 border-l border-neutral-200 bg-neutral-50 sticky top-[6rem]">
+    <aside className="w-96 flex-shrink-0 border-l border-[rgba(19,68,59,0.55)] bg-[rgba(7,27,23,0.7)] sticky top-[6rem] text-fog">
       <div className="h-[calc(100vh-6rem)] flex flex-col px-6 py-6">
         {selectedRisk ? (
-          <div className="flex flex-col h-full bg-neutral-50 rounded-3xl overflow-hidden border border-neutral-200 shadow-sm">
+          <div className="flex flex-col h-full bg-[rgba(7,27,23,0.6)] rounded-3xl overflow-hidden border border-[rgba(19,68,59,0.55)] shadow-satin">
             <div
-              className={`p-6 border-b border-neutral-200 ${
+              className={`p-6 border-b border-[rgba(19,68,59,0.55)] ${
                 RISK_TYPE_STYLES[selectedRisk.riskType]?.headerGradient ||
-                'bg-gradient-to-r from-neutral-50 to-neutral-100'
+                'bg-[radial-gradient(120%_120%_at_0%_0%,rgba(67,160,137,0.25),rgba(7,27,23,0.75))]'
               }`}
             >
               <div className="flex items-center gap-2 mb-3">
-                <svg className="w-4 h-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-seafoam" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-xs text-neutral-600 font-semibold uppercase tracking-wide">
+                <span className="text-xs text-seafoam font-semibold uppercase tracking-[0.2em]">
                   {selectedRisk.branch.name}
                 </span>
               </div>
@@ -100,22 +152,23 @@ function RiskDetailsPanel({ selectedRisk, onExpand }) {
                     <h3
                       className={`font-bold text-lg uppercase tracking-wide ${
                         RISK_TYPE_STYLES[selectedRisk.riskType]?.titleClass ||
-                        'text-neutral-900'
+                        'text-fog'
                       }`}
                     >
                       {selectedRisk.label}
                     </h3>
-                    <p className="text-xs text-neutral-600 mt-0.5">{selectedRisk.sublabel}</p>
+                    <p className="text-xs text-seafoam mt-0.5">{selectedRisk.sublabel}</p>
                   </div>
                 </div>
-                {selectedRisk.level && (
-                  <div className={`px-3 py-1.5 rounded-lg border-2 font-bold text-xs ${
-                    selectedRisk.level === 'HIGH'
-                      ? 'bg-red-100 border-red-600 text-red-900'
-                      : selectedRisk.level === 'MEDIUM'
-                      ? 'bg-amber-100 border-amber-600 text-amber-900'
-                      : 'bg-emerald-100 border-emerald-600 text-emerald-900'
-                  }`}>
+                {levelColors && (
+                  <div
+                    className="px-3 py-1.5 rounded-lg border-2 font-bold text-xs tracking-[0.18em] uppercase flex items-center justify-center"
+                    style={{
+                      background: levelColors.badgeBg,
+                      borderColor: levelColors.badgeBorder,
+                      color: levelColors.badgeText,
+                    }}
+                  >
                     {selectedRisk.level}
                   </div>
                 )}
@@ -123,7 +176,7 @@ function RiskDetailsPanel({ selectedRisk, onExpand }) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="prose prose-sm max-w-none text-neutral-700 leading-relaxed">
+              <div className="prose prose-invert prose-sm max-w-none text-seafoam leading-relaxed">
                 <ReactMarkdown>
                   {typeof selectedRisk.content === 'string' && selectedRisk.content
                     ? selectedRisk.content
@@ -132,10 +185,10 @@ function RiskDetailsPanel({ selectedRisk, onExpand }) {
               </div>
             </div>
 
-            <div className="p-4 border-t border-neutral-200 bg-white">
+            <div className="p-4 border-t border-[rgba(19,68,59,0.55)] bg-[rgba(7,27,23,0.75)]">
               <button
                 onClick={() => onExpand(selectedRisk)}
-                className="w-full btn-secondary text-sm py-2"
+                className="w-full btn-emerald text-sm"
               >
                 <svg className="w-4 h-4 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
@@ -145,16 +198,16 @@ function RiskDetailsPanel({ selectedRisk, onExpand }) {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center bg-white border border-dashed border-neutral-300 rounded-3xl p-10 h-full">
-            <div className="w-20 h-20 bg-neutral-200 rounded-2xl flex items-center justify-center mb-6">
-              <svg className="w-10 h-10 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex flex-col items-center justify-center text-center bg-[rgba(7,27,23,0.55)] border border-dashed border-[rgba(67,160,137,0.45)] rounded-3xl p-10 h-full">
+            <div className="w-20 h-20 bg-[rgba(7,27,23,0.7)] border border-[rgba(67,160,137,0.45)] rounded-2xl flex items-center justify-center mb-6">
+              <svg className="w-10 h-10 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+            <h3 className="text-lg font-semibold text-fog mb-2">
               Select a Risk Node
             </h3>
-            <p className="text-sm text-neutral-600 max-w-xs">
+            <p className="text-sm text-seafoam max-w-xs">
               Click on any risk node in the diagram to view detailed analysis here.
             </p>
           </div>
@@ -185,7 +238,7 @@ export default function TreeDiagram({ branches, context }) {
     horizontalGap: 260,
     verticalGap: 540, // Expanded to prevent overlap between branches with four risk nodes
     startX: 50,
-    startY: 120,
+    startY: 220,
   };
 
   const dimensionSpacing = 140; // Vertical spacing between risk nodes for a single branch
@@ -295,20 +348,6 @@ export default function TreeDiagram({ branches, context }) {
     return `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
   };
 
-  // Get color for risk level
-  const getRiskColor = (level) => {
-    switch (level?.toUpperCase()) {
-      case 'HIGH':
-        return { bg: '#fee2e2', border: '#dc2626', text: '#991b1b' };
-      case 'MEDIUM':
-        return { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' };
-      case 'LOW':
-        return { bg: '#d1fae5', border: '#10b981', text: '#065f46' };
-      default:
-        return { bg: '#f3f4f6', border: '#9ca3af', text: '#4b5563' };
-    }
-  };
-
   const handleRiskClick = (risk) => {
     setSelectedRisk(risk);
   };
@@ -342,33 +381,23 @@ export default function TreeDiagram({ branches, context }) {
   };
 
   const svgWidth = config.startX + config.nodeWidth + config.horizontalGap + config.riskNodeWidth + 50;
-  const svgHeight = totalHeight + 200;
+  const svgHeight = totalHeight + 260;
 
   return (
     <div className="relative card-elevated">
       <div className="flex items-start">
         {/* Left side - Tree Diagram */}
-        <div className="flex-1 p-8 overflow-x-auto border-r border-neutral-200">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <h2 className="section-title">
-                Decision Tree Visualization
-              </h2>
-            </div>
-            <p className="text-neutral-600 text-sm leading-relaxed ml-13">
-              Click any risk node to view detailed analysis in the side panel.
-            </p>
-          </div>
-
-          <div className="relative" style={{ minWidth: svgWidth }}>
+        <div className="flex-1 p-12 overflow-x-auto border-r border-[rgba(19,68,59,0.55)]">
+          <div className="relative" style={{ minWidth: svgWidth + 160 }}>
             <svg width={svgWidth} height={svgHeight} className="overflow-visible">
               {/* Define arrow marker for paths */}
               <defs>
+                <filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="160%" colorInterpolationFilters="sRGB">
+                  <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="rgba(0,0,0,0.45)" />
+                </filter>
+                <filter id="riskShadow" x="-20%" y="-20%" width="140%" height="160%" colorInterpolationFilters="sRGB">
+                  <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="rgba(0,0,0,0.35)" />
+                </filter>
                 <marker
                   id="arrowhead"
                   markerWidth="10"
@@ -376,7 +405,7 @@ export default function TreeDiagram({ branches, context }) {
                   refX="9"
                   refY="3"
                   orient="auto"
-                  fill="#9ca3af"
+                  fill="rgba(212,175,55,0.55)"
                 >
                   <polygon points="0 0, 10 3, 0 6" />
                 </marker>
@@ -396,8 +425,8 @@ export default function TreeDiagram({ branches, context }) {
                       riskNode.x,
                       riskNode.y + config.riskNodeHeight / 2
                     )}
-                    stroke="#9ca3af"
-                    strokeWidth="2"
+                    stroke="rgba(212,175,55,0.35)"
+                    strokeWidth="2.4"
                     fill="none"
                     markerEnd="url(#arrowhead)"
                     opacity="0.4"
@@ -424,7 +453,9 @@ export default function TreeDiagram({ branches, context }) {
                       rx="8"
                       fill={colors.bg}
                       stroke={colors.border}
-                      strokeWidth="2"
+                      strokeWidth="2.5"
+                      filter="url(#nodeShadow)"
+                      strokeLinejoin="round"
                     />
                     {/* Multi-line text */}
                     {wrappedText.map((line, lineIndex) => (
@@ -482,10 +513,11 @@ export default function TreeDiagram({ branches, context }) {
                       width={config.riskNodeWidth}
                       height={config.riskNodeHeight + 10}
                       rx="6"
-                      fill={isSelected ? theme.selectedBg : '#ffffff'}
-                      stroke={theme.border}
-                      strokeWidth={isSelected ? '3' : '2'}
-                      className="transition-all hover:opacity-80"
+                      fill={isSelected ? theme.selectedBg : 'rgba(11,61,52,0.82)'}
+                      stroke={isSelected ? GOLD_HI : GOLD_BASE}
+                      strokeWidth={isSelected ? '3' : '2.2'}
+                      filter="url(#riskShadow)"
+                      className="transition-all hover:brightness-110"
                     />
                     <text
                       x={config.riskNodeWidth / 2}
@@ -493,6 +525,7 @@ export default function TreeDiagram({ branches, context }) {
                       textAnchor="middle"
                       dominantBaseline="middle"
                       fontSize="18"
+                      fill={TEXT_FOG}
                     >
                       {node.icon}
                     </text>
@@ -503,7 +536,7 @@ export default function TreeDiagram({ branches, context }) {
                       dominantBaseline="middle"
                       fontSize="11"
                       fontWeight="600"
-                      fill="#1f2937"
+                      fill={theme.border || TEXT_FOG}
                     >
                       {node.label}
                     </text>
@@ -514,7 +547,7 @@ export default function TreeDiagram({ branches, context }) {
                       dominantBaseline="middle"
                       fontSize="9"
                       fontWeight="400"
-                      fill="#6b7280"
+                      fill={TEXT_SEAFOAM}
                     >
                       {node.sublabel}
                     </text>
@@ -525,8 +558,8 @@ export default function TreeDiagram({ branches, context }) {
                       width={40}
                       height={12}
                       rx="6"
-                      fill={levelColors.bg}
-                      stroke={levelColors.border}
+                      fill={levelColors.badgeBg}
+                      stroke={levelColors.badgeBorder}
                       strokeWidth="1"
                     />
                     <text
@@ -536,7 +569,7 @@ export default function TreeDiagram({ branches, context }) {
                       dominantBaseline="middle"
                       fontSize="8"
                       fontWeight="700"
-                      fill={levelColors.text}
+                      fill={levelColors.badgeText}
                     >
                       {node.level}
                     </text>
@@ -547,36 +580,36 @@ export default function TreeDiagram({ branches, context }) {
           </div>
 
           {/* Legend */}
-          <div className="mt-8 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-2xl p-6 border border-neutral-200">
-            <h3 className="font-bold text-neutral-900 mb-4 uppercase tracking-wide text-sm flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mt-8 bg-[rgba(7,27,23,0.6)] rounded-2xl p-6 border border-[rgba(19,68,59,0.55)]">
+            <h3 className="font-bold text-fog mb-4 uppercase tracking-[0.2em] text-sm flex items-center gap-2">
+              <svg className="w-4 h-4 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Legend
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
-              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-neutral-200">
-                <div className="w-8 h-8 border-2 border-neutral-400 rounded-lg bg-neutral-50"></div>
-                <span className="font-medium text-neutral-700">Decision Branch</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3 text-seafoam">
+              <div className="flex items-center gap-3 bg-[rgba(7,27,23,0.55)] p-3 rounded-xl border border-[rgba(19,68,59,0.55)]">
+                <div className="w-8 h-8 border-2 border-[rgba(242,212,143,0.55)] rounded-lg bg-[rgba(11,61,52,0.85)]"></div>
+                <span className="font-medium">Decision Branch</span>
               </div>
-              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-neutral-200">
-                <div className="w-8 h-8 border-2 border-primary-500 rounded-lg bg-white"></div>
-                <span className="font-medium text-neutral-700">Risk Node (click to view)</span>
+              <div className="flex items-center gap-3 bg-[rgba(7,27,23,0.55)] p-3 rounded-xl border border-[rgba(19,68,59,0.55)]">
+                <div className="w-8 h-8 border-2 border-[rgba(242,212,143,0.55)] rounded-lg bg-[rgba(11,61,52,0.75)]"></div>
+                <span className="font-medium">Risk Node (click to view)</span>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-neutral-200">
-                <div className="w-8 h-8 bg-red-100 border-2 border-red-600 rounded-lg"></div>
-                <span className="font-medium text-neutral-700">High Risk</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-seafoam">
+              {['HIGH', 'MEDIUM', 'LOW'].map((level) => {
+                const palette = getRiskColor(level);
+                return (
+                  <div key={level} className="flex items-center gap-3 bg-[rgba(7,27,23,0.55)] p-3 rounded-xl border border-[rgba(19,68,59,0.55)]">
+                    <div
+                      className="w-8 h-8 rounded-lg border-2"
+                      style={{ background: palette.bg, borderColor: palette.border }}
+                    ></div>
+                    <span className="font-medium capitalize">{level.toLowerCase()} Risk</span>
               </div>
-              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-neutral-200">
-                <div className="w-8 h-8 bg-amber-100 border-2 border-amber-600 rounded-lg"></div>
-                <span className="font-medium text-neutral-700">Medium Risk</span>
-              </div>
-              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-neutral-200">
-                <div className="w-8 h-8 bg-emerald-100 border-2 border-emerald-600 rounded-lg"></div>
-                <span className="font-medium text-neutral-700">Low Risk</span>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -591,30 +624,30 @@ export default function TreeDiagram({ branches, context }) {
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-3xl shadow-soft-lg max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col animate-slide-up"
+            className="bg-[rgba(7,27,23,0.9)] border border-[rgba(19,68,59,0.55)] rounded-3xl shadow-satin max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div
-              className={`flex items-center justify-between p-8 border-b border-neutral-200 ${
+              className={`flex items-center justify-between p-8 border-b border-[rgba(19,68,59,0.55)] ${
                 (RISK_TYPE_STYLES[selectedModal.riskType]?.headerGradient) ||
-                'bg-gradient-to-r from-neutral-50 to-neutral-100'
+                'bg-[radial-gradient(120%_120%_at_0%_0%,rgba(67,160,137,0.25),rgba(7,27,23,0.75))]'
               }`}
             >
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl flex items-center justify-center text-4xl shadow-soft">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl branch-depth bg-[linear-gradient(145deg,#1A8A74,#0F6B5C)]">
                   {selectedModal.icon}
                 </div>
                 <div>
                   <h3
                     className={`text-2xl font-bold font-display mb-1 ${
-                      RISK_TYPE_STYLES[selectedModal.riskType]?.titleClass || 'text-neutral-900'
+                      RISK_TYPE_STYLES[selectedModal.riskType]?.titleClass || 'text-fog'
                     }`}
                   >
                     {selectedModal.label}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-neutral-600">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex items-center gap-2 text-sm text-seafoam">
+                    <svg className="w-4 h-4 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="font-medium">Branch: {selectedModal.branch.name}</span>
@@ -623,7 +656,7 @@ export default function TreeDiagram({ branches, context }) {
               </div>
               <button
                 onClick={closeModal}
-                className="text-neutral-400 hover:text-neutral-700 transition-colors p-2.5 hover:bg-neutral-100 rounded-xl"
+                className="text-seafoam hover:text-fog transition-colors p-2.5 hover:bg-[rgba(11,61,52,0.65)] rounded-xl"
                 aria-label="Close"
               >
                 <svg
@@ -643,8 +676,8 @@ export default function TreeDiagram({ branches, context }) {
             </div>
 
             {/* Modal Content */}
-            <div className="p-8 overflow-y-auto flex-1 bg-neutral-50">
-              <div className="prose prose-sm max-w-none bg-white rounded-2xl p-6 border border-neutral-200">
+            <div className="p-8 overflow-y-auto flex-1 bg-[rgba(7,27,23,0.6)]">
+              <div className="prose prose-invert prose-sm max-w-none bg-[rgba(7,27,23,0.75)] rounded-2xl p-6 border border-[rgba(19,68,59,0.55)]">
                 <ReactMarkdown>
                   {typeof selectedModal.content === 'string' && selectedModal.content
                     ? selectedModal.content
@@ -654,10 +687,10 @@ export default function TreeDiagram({ branches, context }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-neutral-200 bg-white flex justify-end">
+            <div className="p-6 border-t border-[rgba(19,68,59,0.55)] bg-[rgba(7,27,23,0.8)] flex justify-end">
               <button
                 onClick={closeModal}
-                className="btn-primary"
+                className="btn-gold"
               >
                 Close Analysis
               </button>

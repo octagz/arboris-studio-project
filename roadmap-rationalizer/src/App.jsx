@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import FileUpload from './components/FileUpload';
 import OptionTree from './components/OptionTree';
 import RoadmapPlan from './components/RoadmapPlan';
 import LoadingSpinner from './components/LoadingSpinner';
+import Login from './components/Login';
 import { combineFileContents } from './utils/fileParser';
 import { exportHTMLReport, exportPDFReport } from './utils/exportReport';
 import { inferDecisionYear, getDefaultDecisionYear } from './utils/decisionYear';
@@ -21,7 +22,9 @@ function App() {
   const defaultDecisionYear = getDefaultDecisionYear();
   const YEAR_MIN = 1900;
   const YEAR_MAX = 2100;
+  const AUTH_STORAGE_KEY = 'rr_is_authenticated';
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [files, setFiles] = useState([]);
   const [context, setContextData] = useState('');
   const [branches, setBranches] = useState([]);
@@ -35,6 +38,40 @@ function App() {
   const [isManualDecisionYear, setIsManualDecisionYear] = useState(false);
 
   const isResetDisabled = !isManualDecisionYear || decisionYear === inferredDecisionYear;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const stored = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    if (stored === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, [AUTH_STORAGE_KEY]);
+
+  const handleAuthenticated = useCallback(() => {
+    setIsAuthenticated(true);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(AUTH_STORAGE_KEY, 'true');
+    }
+  }, [AUTH_STORAGE_KEY]);
+
+  const handleLogout = useCallback(() => {
+    setIsAuthenticated(false);
+    setFiles([]);
+    setContextData('');
+    setBranches([]);
+    setHasAnalysis(false);
+    setViewMode('tree');
+    setDecisionYear(defaultDecisionYear);
+    setDecisionYearInput(String(defaultDecisionYear));
+    setInferredDecisionYear(defaultDecisionYear);
+    setIsManualDecisionYear(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  }, [AUTH_STORAGE_KEY, defaultDecisionYear]);
 
   const processFiles = useCallback(async (filesToProcess) => {
     if (filesToProcess.length === 0) return;
@@ -165,8 +202,13 @@ function App() {
     URL.revokeObjectURL(url);
   }, [context, branches, decisionYear]);
 
-  const handleExportPDF = useCallback(() => {
-    exportPDFReport({ context, branches, decisionYear });
+  const handleExportPDF = useCallback(async () => {
+    try {
+      await exportPDFReport({ context, branches, decisionYear });
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
   }, [context, branches, decisionYear]);
 
   const handleDecisionYearInputChange = useCallback((event) => {
@@ -241,49 +283,62 @@ function App() {
     setIsManualDecisionYear(false);
   }, [defaultDecisionYear]);
 
+  if (!isAuthenticated) {
+    return <Login onAuthenticated={handleAuthenticated} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-mesh bg-neutral-50">
+    <div className="min-h-screen bg-satin text-fog">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl shadow-soft border-b border-neutral-200/50">
+      <header className="sticky top-0 z-40 bg-[rgba(7,27,23,0.85)] backdrop-blur-xl border-b border-[rgba(19,68,59,0.65)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-xl flex items-center justify-center shadow-soft">
-                <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center branch-depth bg-[linear-gradient(145deg,#1A8A74,#0F6B5C)]">
+                <svg className="w-7 h-7 text-fog" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 font-display">
-                  Roadmap Rationalizer
+                <h1 className="text-2xl md:text-3xl font-bold font-display gold-type">
+                  Arboris: Roadmap rationzalizer
                 </h1>
-                <p className="text-neutral-600 text-sm mt-0.5 hidden sm:block">
+                <p className="text-seafoam text-sm mt-0.5 hidden sm:block">
                   AI-Powered Decision Intelligence Platform
                 </p>
               </div>
             </div>
-            {hasAnalysis && (
-              <div className="flex gap-2 md:gap-3">
-                <button
-                  onClick={handleExportHTML}
-                  className="px-4 py-2.5 bg-white text-neutral-700 border-2 border-neutral-200 rounded-xl font-semibold shadow-soft hover:shadow-soft-lg hover:border-neutral-300 hover:bg-neutral-50 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  <span className="hidden sm:inline">HTML</span>
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  className="px-4 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl font-semibold shadow-soft hover:shadow-soft-lg hover:from-primary-700 hover:to-primary-800 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span className="hidden sm:inline">Export PDF</span>
-                </button>
-              </div>
-            )}
+            <div className="flex items-center gap-2 md:gap-3">
+              {hasAnalysis && (
+                <>
+                  <button
+                    onClick={handleExportHTML}
+                    className="btn-emerald flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <span className="hidden sm:inline">HTML</span>
+                  </button>
+                  <button
+                    onClick={handleExportPDF}
+                    className="btn-gold flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="hidden sm:inline">Export PDF</span>
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="btn-emerald"
+              >
+                Log out
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -294,15 +349,15 @@ function App() {
           <div className="animate-fade-in">
             <div className="card-elevated max-w-4xl mx-auto p-8 md:p-12">
               <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl mb-6">
-                  <svg className="w-10 h-10 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6 border border-[rgba(67,160,137,0.4)] bg-[rgba(7,27,23,0.55)]">
+                  <svg className="w-10 h-10 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3 font-display">
+                <h2 className="text-3xl md:text-4xl font-bold text-fog mb-3 font-display">
                   Welcome to Decision Intelligence
                 </h2>
-                <p className="text-neutral-600 text-lg max-w-2xl mx-auto leading-relaxed">
+                <p className="text-seafoam text-lg max-w-2xl mx-auto leading-relaxed">
                   Upload your strategic documents to unlock AI-powered risk analysis and data-driven insights for your roadmap decisions
                 </p>
               </div>
@@ -310,8 +365,8 @@ function App() {
                 <div className="flex-1">
                   <FileUpload onFilesSelected={handleFilesSelected} isLoading={isLoading} />
                 </div>
-                <div className="w-full max-w-xs xl:max-w-sm bg-white border border-neutral-200 rounded-2xl p-5 shadow-soft">
-                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2" htmlFor="decision-year-input">
+                <div className="w-full max-w-xs xl:max-w-sm surface-raised p-5">
+                  <label className="block text-xs font-semibold text-muted uppercase tracking-[0.18em] mb-2" htmlFor="decision-year-input">
                     Decision Year
                   </label>
                   <div className="flex items-center gap-3">
@@ -325,41 +380,41 @@ function App() {
                       onChange={handleDecisionYearInputChange}
                       onBlur={handleDecisionYearInputBlur}
                       onKeyDown={handleDecisionYearInputKeyDown}
-                      className="flex-1 rounded-xl border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm font-semibold text-neutral-900 shadow-inner focus:border-primary-500 focus:ring-2 focus:ring-primary-200"
+                      className="flex-1 input-emerald text-sm"
                       inputMode="numeric"
                       pattern="\\d{4}"
                     />
                     <button
                       type="button"
                       onClick={handleDecisionYearReset}
-                      className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${isResetDisabled
-                        ? 'border-neutral-200 text-neutral-400 cursor-not-allowed'
-                        : 'border-primary-200 text-primary-600 hover:bg-primary-50'}
+                      className={`px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${isResetDisabled
+                        ? 'border border-[rgba(67,160,137,0.25)] text-muted cursor-not-allowed'
+                        : 'border border-[rgba(67,160,137,0.65)] text-fog hover:bg-[rgba(67,160,137,0.12)]'}
                       `}
                       disabled={isResetDisabled}
                     >
                       Use inferred
                     </button>
                   </div>
-                  <p className="mt-2 text-xs text-neutral-500">
-                    Auto-detected: <span className="font-semibold text-neutral-700">{inferredDecisionYear}</span>. Update to override the inferred year for this analysis.
+                  <p className="mt-2 text-xs text-muted">
+                    Auto-detected: <span className="font-semibold text-fog">{inferredDecisionYear}</span>. Update to override the inferred year for this analysis.
                   </p>
                   {isManualDecisionYear && (
-                    <p className="mt-1 text-xs font-semibold text-amber-600">
+                    <p className="mt-1 text-xs font-semibold text-gold-base">
                       Manual year override active.
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="mt-8 pt-8 border-t border-neutral-200">
+              <div className="mt-8 pt-8 border-t border-[rgba(19,68,59,0.45)]">
                 <div className="text-center">
-                  <p className="text-sm text-neutral-600 mb-4 font-medium">
+                  <p className="text-sm text-muted mb-4 font-medium">
                     Explore the platform with sample data
                   </p>
                   <button
                     onClick={handleLoadDemoData}
-                    className="btn-gradient inline-flex items-center gap-2"
+                    className="btn-emerald inline-flex items-center gap-2"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -373,33 +428,33 @@ function App() {
             {/* Feature Grid */}
             <div className="grid md:grid-cols-3 gap-6 mt-12 max-w-5xl mx-auto">
               <div className="card p-6 text-center">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 border border-[rgba(67,160,137,0.45)] bg-[rgba(7,27,23,0.55)]">
+                  <svg className="w-6 h-6 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-neutral-900 mb-2">Hierarchical Risk Framework</h3>
-                <p className="text-sm text-neutral-600">Financial, Technical, Organizational, and Ecosystem risk pillars with specialist analyses</p>
+                <h3 className="font-semibold text-fog mb-2">Hierarchical Risk Framework</h3>
+                <p className="text-sm text-seafoam">Financial, Technical, Organizational, and Ecosystem risk pillars with specialist analyses</p>
               </div>
               
               <div className="card p-6 text-center">
-                <div className="w-12 h-12 bg-secondary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-secondary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 border border-[rgba(67,160,137,0.45)] bg-[rgba(7,27,23,0.55)]">
+                  <svg className="w-6 h-6 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-neutral-900 mb-2">Visual Decision Trees</h3>
-                <p className="text-sm text-neutral-600">Interactive visualization of strategic pathways</p>
+                <h3 className="font-semibold text-fog mb-2">Visual Decision Trees</h3>
+                <p className="text-sm text-seafoam">Interactive visualization of strategic pathways</p>
               </div>
               
               <div className="card p-6 text-center">
-                <div className="w-12 h-12 bg-accent-teal/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-accent-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 border border-[rgba(67,160,137,0.45)] bg-[rgba(7,27,23,0.55)]">
+                  <svg className="w-6 h-6 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-neutral-900 mb-2">Executive Reports</h3>
-                <p className="text-sm text-neutral-600">Export professional PDF and HTML reports</p>
+                <h3 className="font-semibold text-fog mb-2">Executive Reports</h3>
+                <p className="text-sm text-seafoam">Export professional PDF and HTML reports</p>
               </div>
             </div>
           </div>
@@ -421,13 +476,13 @@ function App() {
                     <h2 className="section-title mb-2">
                       Strategic Decision Analysis
                     </h2>
-                    <p className="text-neutral-600 text-sm">
+                    <p className="text-muted text-sm">
                       Exploring {branches.length} decision {branches.length === 1 ? 'pathway' : 'pathways'} with comprehensive risk assessment
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
                     <div className="sm:flex sm:items-center sm:gap-3">
-                      <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wide" htmlFor="decision-year-input-inline">
+                      <label className="text-xs font-semibold text-muted uppercase tracking-[0.18em]" htmlFor="decision-year-input-inline">
                         Decision Year
                       </label>
                       <div className="mt-1 flex items-center gap-2 sm:mt-0">
@@ -441,16 +496,16 @@ function App() {
                           onChange={handleDecisionYearInputChange}
                           onBlur={handleDecisionYearInputBlur}
                           onKeyDown={handleDecisionYearInputKeyDown}
-                          className="w-28 rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm font-semibold text-neutral-900 shadow-inner focus:border-primary-500 focus:ring-2 focus:ring-primary-200"
+                          className="w-28 input-emerald text-sm"
                           inputMode="numeric"
                           pattern="\\d{4}"
                         />
                         <button
                           type="button"
                           onClick={handleDecisionYearReset}
-                          className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${isResetDisabled
-                            ? 'border-neutral-200 text-neutral-400 cursor-not-allowed'
-                            : 'border-primary-200 text-primary-600 hover:bg-primary-50'}
+                          className={`px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${isResetDisabled
+                            ? 'border border-[rgba(67,160,137,0.25)] text-muted cursor-not-allowed'
+                            : 'border border-[rgba(67,160,137,0.65)] text-fog hover:bg-[rgba(67,160,137,0.12)]'}
                           `}
                           disabled={isResetDisabled}
                         >
@@ -458,8 +513,8 @@ function App() {
                         </button>
                       </div>
                     </div>
-                    <div className="text-xs text-neutral-500">
-                      Auto-detected year: <span className="font-semibold text-neutral-700">{inferredDecisionYear}</span>{' '}
+                    <div className="text-xs text-muted">
+                      Auto-detected year: <span className="font-semibold text-fog">{inferredDecisionYear}</span>{' '}
                       {isManualDecisionYear ? '(manual override active)' : '(auto)'}
                     </div>
                   </div>
@@ -472,15 +527,15 @@ function App() {
                     if (count === 0) return null;
 
                     const colorClasses = {
-                      HIGH: 'bg-red-100 text-red-700 border-red-300',
-                      MEDIUM: 'bg-amber-100 text-amber-700 border-amber-300',
-                      LOW: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+                      HIGH: 'bg-[rgba(213,75,75,0.18)] text-error border border-[rgba(213,75,75,0.55)]',
+                      MEDIUM: 'bg-[rgba(212,175,55,0.15)] text-gold-base border border-[rgba(212,175,55,0.45)]',
+                      LOW: 'bg-[rgba(37,183,138,0.18)] text-success border border-[rgba(37,183,138,0.55)]',
                     };
 
                     return (
                       <span
                         key={level}
-                        className={`badge ${colorClasses[level]} border-2`}
+                        className={`badge ${colorClasses[level]}`}
                       >
                         {level}: {count}
                       </span>
@@ -490,13 +545,13 @@ function App() {
               </div>
 
               {/* View Mode Selector */}
-              <div className="flex items-center gap-3 bg-neutral-100 rounded-xl p-1.5 inline-flex">
+              <div className="flex items-center gap-3 bg-[rgba(7,27,23,0.6)] border border-[rgba(19,68,59,0.65)] rounded-xl p-1.5 inline-flex">
                 <button
                   onClick={() => setViewMode('tree')}
                   className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                     viewMode === 'tree'
-                      ? 'bg-white text-neutral-900 shadow-soft'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                      ? 'bg-[rgba(19,68,59,0.85)] text-fog shadow-satin'
+                      : 'text-seafoam hover:text-fog hover:bg-[rgba(19,68,59,0.45)]'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -509,8 +564,8 @@ function App() {
                   onClick={() => setViewMode('radar')}
                   className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                     viewMode === 'radar'
-                      ? 'bg-white text-neutral-900 shadow-soft'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                      ? 'bg-[rgba(19,68,59,0.85)] text-fog shadow-satin'
+                      : 'text-seafoam hover:text-fog hover:bg-[rgba(19,68,59,0.45)]'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -523,8 +578,8 @@ function App() {
                   onClick={() => setViewMode('cards')}
                   className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                     viewMode === 'cards'
-                      ? 'bg-white text-neutral-900 shadow-soft'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                      ? 'bg-[rgba(19,68,59,0.85)] text-fog shadow-satin'
+                      : 'text-seafoam hover:text-fog hover:bg-[rgba(19,68,59,0.45)]'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -536,8 +591,8 @@ function App() {
                   onClick={() => setViewMode('plan')}
                   className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                     viewMode === 'plan'
-                      ? 'bg-white text-neutral-900 shadow-soft'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                      ? 'bg-[rgba(19,68,59,0.85)] text-fog shadow-satin'
+                      : 'text-seafoam hover:text-fog hover:bg-[rgba(19,68,59,0.45)]'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -558,18 +613,18 @@ function App() {
         )}
 
         {hasAnalysis && (
-          <div className="mt-8 card max-w-4xl mx-auto p-6 bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200 animate-slide-up">
+          <div className="mt-8 card max-w-4xl mx-auto p-6 border border-[rgba(67,160,137,0.45)] bg-[rgba(7,27,23,0.6)] animate-slide-up">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border border-[rgba(67,160,137,0.55)] bg-[rgba(15,107,92,0.85)]">
+                <svg className="w-6 h-6 text-gold-base" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                <h3 className="text-lg font-semibold text-fog mb-2">
                   Analysis Complete
                 </h3>
-                <p className="text-neutral-700 text-sm leading-relaxed">
+                <p className="text-seafoam text-sm leading-relaxed">
                   Your strategic analysis is ready. Review the decision branches, risk assessments, and mitigation strategies above. Export your findings to share with stakeholders.
                 </p>
               </div>
@@ -579,17 +634,17 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-neutral-200 mt-20">
+      <footer className="mt-20 border-t border-[rgba(19,68,59,0.6)] bg-[rgba(7,27,23,0.85)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-neutral-600 text-sm">
-              <span className="font-semibold text-neutral-900">Roadmap Rationalizer</span>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-seafoam">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-fog">Arboris</span>
               <span>•</span>
               <span>© 2025 - Authors: Julie Vang, Ty Case, Uma Kamath, Chinmaiye Gandhi and Octavio Gzain </span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <div className="flex items-center gap-2">
               <span>Powered by</span>
-              <span className="font-semibold text-primary-600">Perplexity AI</span>
+              <span className="font-semibold text-gold-base">Perplexity AI</span>
             </div>
           </div>
         </div>
