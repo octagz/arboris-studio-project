@@ -1,0 +1,95 @@
+# Product Context: Cloud-Native Analytics Platform
+
+## Product Goals
+- Launch a cloud-native analytics platform to compete with Tableau and Power BI
+- Target initial launch within 12 months
+- Achieve $10M ARR within 24 months post-launch
+- Establish market presence in enterprise data visualization space
+
+## Target Markets
+### Primary Market (Year 1)
+- Enterprise companies with 500-5000 employees
+- Mid-market SaaS companies
+- Estimated TAM: $8 billion
+- Estimated SAM: $2 billion (accessible market)
+- Estimated SOM: $200 million (realistic market share target)
+
+### Secondary Market (Year 2-3)
+- Large enterprises (5000+ employees)
+- Government agencies
+- Fortune 1000 companies
+
+## Key Features & Capabilities
+### MVP Features
+1. Drag-and-drop dashboard builder
+2. Real-time data connectors (50+ sources)
+3. Collaborative sharing and permissions
+4. Mobile-responsive design
+5. Basic AI-powered insights
+
+### Differentiators
+- 5x faster query performance vs competitors
+- AI-assisted natural language querying
+- No-code/low-code customization
+- Superior mobile experience
+
+## Financial Projections
+### Investment Required
+- Development team: $2.5M annually
+- Infrastructure: $800K annually
+- Marketing & Sales: $1.5M annually
+- Operations: $300K annually
+- Total Year 1: $5.1M
+
+### Revenue Projections
+- Year 1: $500K ARR (pilot customers)
+- Year 2: $5M ARR (mid-market focus)
+- Year 3: $12M ARR (enterprise expansion)
+
+### Unit Economics
+- Average contract value: $50K annually
+- Customer acquisition cost (CAC): $25K
+- Gross margin: 75%
+- LTV:CAC ratio target: 3:1
+
+## Technical Requirements
+- Cloud-native architecture (AWS/GCP)
+- Modern tech stack: React, Python, PostgreSQL
+- Microservices architecture
+- API-first design
+- Security compliance: SOC 2, GDPR
+- 99.9% uptime SLA requirement
+
+## Technical Constraints
+- Limited engineering team (10 engineers initially)
+- No prior data visualization platform experience
+- Must integrate with existing customer data ecosystems
+- Need to build vs. buy for core analytics engine
+
+## Competitive Landscape
+### Major Competitors
+1. Tableau (Salesforce) - Market leader, established
+2. Power BI (Microsoft) - Strong enterprise traction
+3. Looker (Google) - Tech-forward, good UX
+4. Qlik Sense - Established, complex
+
+### Competitive Positioning
+- Strength: Performance and AI capabilities
+- Weakness: Brand recognition and ecosystem
+- Opportunity: Mid-market underserved by incumbents
+- Threat: Competitors can undercut on pricing
+
+## Team & Resources
+- Engineering: 10 developers (2 backends, 3 frontend, 2 data, 3 full-stack)
+- Product: 2 PMs
+- Design: 1 designer
+- Marketing: 1 marketing manager (Year 1)
+- Sales: 2 AEs (Year 2)
+
+## Market Risks & Challenges
+- Customer acquisition in crowded market
+- Data security and compliance requirements
+- Need to prove value quickly vs established players
+- Dependency on data connector ecosystem
+- Potential pivot to different vertical if initial traction low
+
