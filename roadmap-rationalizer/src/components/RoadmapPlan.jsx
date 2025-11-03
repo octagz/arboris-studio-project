@@ -1,33 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import LoadingSpinner from './LoadingSpinner';
-import { generateRoadmapRecommendations } from '../services/perplexityApi';
 
-function RoadmapPlan({ branches, context, decisionYear }) {
-  const [recommendations, setRecommendations] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+function RoadmapPlan({ decisionYear, recommendations, error, isGenerating, onRetry }) {
   const displayYear = decisionYear ?? 2025;
   const showLegacySections = false;
-
-  useEffect(() => {
-    if (branches && branches.length > 0 && context) {
-      loadRecommendations();
-    }
-  }, [branches, context, displayYear]);
-
-  const loadRecommendations = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await generateRoadmapRecommendations(context, branches, displayYear);
-      setRecommendations(result);
-    } catch (err) {
-      console.error('Error generating recommendations:', err);
-      setError(err.message || 'Failed to generate recommendations');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const sequencedDecisions = useMemo(() => {
     if (!recommendations?.decisionTimeline) {
@@ -48,7 +24,7 @@ function RoadmapPlan({ branches, context, decisionYear }) {
     });
   }, [recommendations?.decisionTimeline]);
 
-  if (isLoading) {
+  if (isGenerating) {
     return (
       <div className="card p-12">
         <LoadingSpinner message="Generating strategic roadmap recommendations..." />
@@ -68,12 +44,15 @@ function RoadmapPlan({ branches, context, decisionYear }) {
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-error mb-2">Error Generating Recommendations</h3>
             <p className="text-seafoam text-sm">{error}</p>
-            <button
-              onClick={loadRecommendations}
-              className="mt-4 btn-gold"
-            >
-              Try Again
-            </button>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="mt-4 btn-gold"
+                disabled={isGenerating}
+              >
+                Try Again
+              </button>
+            )}
           </div>
         </div>
       </div>

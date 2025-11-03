@@ -352,13 +352,15 @@ export async function exportPDFReport(data) {
   container.className = 'rr-pdf-export-container';
   container.style.position = 'fixed';
   container.style.left = '0';
-  container.style.top = '-10000px';
+  container.style.top = '0';
+  container.style.left = '-12000px';
   container.style.width = '900px';
   container.style.padding = '32px 40px';
   container.style.backgroundColor = '#ffffff';
   container.style.zIndex = '-1';
-  container.style.opacity = '0';
   container.style.pointerEvents = 'none';
+  container.style.maxHeight = 'none';
+  container.style.overflow = 'visible';
   container.innerHTML = `<style>${REPORT_STYLES}</style>${reportBody}`;
 
   document.body.appendChild(container);
@@ -368,25 +370,51 @@ export async function exportPDFReport(data) {
   }
 
   try {
-    const doc = new jsPDF('p', 'pt', 'a4');
-    const marginX = 36;
-    const marginY = 36;
-    const availableWidth = doc.internal.pageSize.getWidth() - marginX * 2;
+    if (document.fonts?.ready) {
+      await document.fonts.ready;
+    }
 
-    await doc.html(container, {
-      x: marginX,
-      y: marginY,
-      width: availableWidth,
-      windowWidth: 900,
-      autoPaging: 'text',
-      html2canvas: {
-        scale: 0.82,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      },
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    const maxCanvasDimension = 16384; // Chrome/WebKit upper bound
+    const targetWidth = container.scrollWidth;
+    const targetHeight = container.scrollHeight;
+
+    const deviceScale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+    const widthScale = maxCanvasDimension / targetWidth;
+    const heightScale = maxCanvasDimension / targetHeight;
+    const safeScale = Math.min(deviceScale, widthScale, heightScale);
+    const effectiveScale = safeScale > 0 ? Math.min(safeScale, 2) : 1;
+
+    const canvas = await window.html2canvas(container, {
+      scale: effectiveScale,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: targetWidth,
+      windowHeight: targetHeight,
     });
 
-    doc.save('roadmap-risk-analysis.pdf');
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('roadmap-risk-analysis.pdf');
   } finally {
     document.body.removeChild(container);
   }

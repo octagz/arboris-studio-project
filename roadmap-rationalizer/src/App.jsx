@@ -15,8 +15,15 @@ import {
   analyzeOrganizationalRisk,
   analyzeEcosystemRisk,
   determineRiskLevel,
+  generateRoadmapRecommendations,
 } from './services/perplexityApi';
-import { mockContext, mockBranches, mockRiskAnalyses, mockRiskLevels } from './services/mockData';
+import {
+  mockContext,
+  mockBranches,
+  mockRiskAnalyses,
+  mockRiskLevels,
+  mockRoadmapRecommendations,
+} from './services/mockData';
 
 function App() {
   const defaultDecisionYear = getDefaultDecisionYear();
@@ -36,6 +43,9 @@ function App() {
   const [decisionYearInput, setDecisionYearInput] = useState(String(defaultDecisionYear));
   const [inferredDecisionYear, setInferredDecisionYear] = useState(defaultDecisionYear);
   const [isManualDecisionYear, setIsManualDecisionYear] = useState(false);
+  const [roadmapRecommendations, setRoadmapRecommendations] = useState(null);
+  const [roadmapError, setRoadmapError] = useState(null);
+  const [isRoadmapGenerating, setIsRoadmapGenerating] = useState(false);
 
   const isResetDisabled = !isManualDecisionYear || decisionYear === inferredDecisionYear;
 
@@ -63,6 +73,9 @@ function App() {
     setContextData('');
     setBranches([]);
     setHasAnalysis(false);
+    setRoadmapRecommendations(null);
+    setRoadmapError(null);
+    setIsRoadmapGenerating(false);
     setViewMode('tree');
     setDecisionYear(defaultDecisionYear);
     setDecisionYearInput(String(defaultDecisionYear));
@@ -73,11 +86,37 @@ function App() {
     }
   }, [AUTH_STORAGE_KEY, defaultDecisionYear]);
 
+  const performRoadmapGeneration = useCallback(async (contextSource, branchSource, year) => {
+    if (!contextSource || !Array.isArray(branchSource) || branchSource.length === 0) {
+      setRoadmapRecommendations(null);
+      setRoadmapError(null);
+      return null;
+    }
+
+    setIsRoadmapGenerating(true);
+    setRoadmapError(null);
+
+    try {
+      const roadmap = await generateRoadmapRecommendations(contextSource, branchSource, year);
+      setRoadmapRecommendations(roadmap);
+      return roadmap;
+    } catch (error) {
+      console.error('Error generating roadmap recommendations:', error);
+      setRoadmapError(error.message || 'Failed to generate roadmap recommendations');
+      return null;
+    } finally {
+      setIsRoadmapGenerating(false);
+    }
+  }, [generateRoadmapRecommendations]);
+
   const processFiles = useCallback(async (filesToProcess) => {
     if (filesToProcess.length === 0) return;
 
     setIsLoading(true);
     setHasAnalysis(false);
+    setRoadmapRecommendations(null);
+    setRoadmapError(null);
+    setIsRoadmapGenerating(false);
 
     try {
       // Step 1: Parse and combine file contents
@@ -87,6 +126,7 @@ function App() {
       const manualOverrideActive = isManualDecisionYear && decisionYear !== inferredYear;
       setInferredDecisionYear(inferredYear);
       setIsManualDecisionYear(manualOverrideActive);
+      const analysisDecisionYear = manualOverrideActive ? decisionYear : inferredYear;
       if (!manualOverrideActive) {
         setDecisionYear(inferredYear);
         setDecisionYearInput(String(inferredYear));
@@ -175,6 +215,9 @@ function App() {
         setBranches([...initializedBranches]);
       }
 
+      setCurrentStep('Generating roadmap plan...');
+      await performRoadmapGeneration(contextSummary, initializedBranches, analysisDecisionYear);
+
       setHasAnalysis(true);
       setCurrentStep(null);
     } catch (error) {
@@ -184,7 +227,11 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }, [decisionYear, isManualDecisionYear, setBranches, setContextData]);
+  }, [decisionYear, isManualDecisionYear, performRoadmapGeneration, setBranches, setContextData]);
+
+  const handleRoadmapRegenerate = useCallback(async () => {
+    await performRoadmapGeneration(context, branches, decisionYear);
+  }, [performRoadmapGeneration, context, branches, decisionYear]);
 
   const handleFilesSelected = useCallback(async (newFiles) => {
     setFiles(newFiles);
@@ -276,6 +323,9 @@ function App() {
       mitigation: mockRiskLevels[branch.name]?.mitigation || [],
     }));
     setBranches(demoData);
+    setRoadmapRecommendations(mockRoadmapRecommendations);
+    setRoadmapError(null);
+    setIsRoadmapGenerating(false);
     setHasAnalysis(true);
     setDecisionYear(defaultDecisionYear);
     setDecisionYearInput(String(defaultDecisionYear));
@@ -513,10 +563,7 @@ function App() {
                         </button>
                       </div>
                     </div>
-                    <div className="text-xs text-muted">
-                      Auto-detected year: <span className="font-semibold text-fog">{inferredDecisionYear}</span>{' '}
-                      {isManualDecisionYear ? '(manual override active)' : '(auto)'}
-                    </div>
+                    
                   </div>
                 </div>
 
@@ -605,7 +652,13 @@ function App() {
 
             {/* Conditional rendering based on view mode */}
             {viewMode === 'plan' ? (
-              <RoadmapPlan branches={branches} context={context} decisionYear={decisionYear} />
+              <RoadmapPlan
+                decisionYear={decisionYear}
+                recommendations={roadmapRecommendations}
+                error={roadmapError}
+                isGenerating={isRoadmapGenerating}
+                onRetry={handleRoadmapRegenerate}
+              />
             ) : (
               <OptionTree branches={branches} context={context} viewMode={viewMode} />
             )}
