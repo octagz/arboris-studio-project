@@ -1,0 +1,29 @@
+Interviewee: Prof. Sarah Jenkins
+Role: Associate Professor
+Company: UCSB
+Date: 2023-11-21
+Interviewer: Ty Case
+
+Ty: Professor, tell me about the challenges your students face with customer discovery. I know you teach the Lean Launchpad curriculum.
+
+Sarah: The biggest issue is confirmation bias. They go into interviews looking for validation of their specific idea, rather than trying to understand the problem. They ask leading questions like "Would you buy this if it cost $50?" instead of "Tell me about the last time you solved this problem."
+
+Ty: How do you try to correct that?
+
+Sarah: I tell them to listen for the "no," but it's hard. They hear "yes" even when the customer says "maybe." They come back to class excited, saying "Everyone loved it!" and then I listen to the recording and the customer was clearly just being polite.
+
+Ty: Do you think technology could help?
+
+Sarah: Potentially. If there was a tool that could objectively analyze the sentiment and themes, it might act as a neutral third party. "Look, the AI says this person was actually frustrated with your pricing, not excited." It takes the ego out of it.
+
+Ty: That's an interesting use case. An objective reality check.
+
+Sarah: Exactly. It would force them to confront the data, rather than their interpretation of it. But it has to be easy to use. These are students, not data scientists. They don't have time to learn a complex new tool. They have 10 weeks to build a business.
+
+Ty: What about grading? How do you assess their interviews currently?
+
+Sarah: It's impossible. I have 50 students, each doing 10 interviews. That's 500 interviews. I can't listen to them all. I just spot check. If a tool could give me a dashboard showing me who is asking good questions and who isn't, that would revolutionize how I teach. I could intervene early and say "Hey, you're talking 80% of the time, you need to listen more."
+
+Ty: So a "coach" for the interviewer as well?
+
+Sarah: Yes! Real-time feedback would be the dream. But even post-interview analytics would be a huge step up from what we have now.

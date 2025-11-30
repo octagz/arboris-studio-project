@@ -1,0 +1,25 @@
+Interviewee: Alex Chen
+Role: Product Manager
+Company: Apeel Sciences
+Date: 2023-11-20
+Interviewer: Julie Vang
+
+Julie: Thanks for chatting, Alex. I want to dig into how you currently handle market validation.
+
+Alex: Honestly? It's a mess. We record everything on Zoom, but then the recordings just sit there. Nobody has time to watch an hour-long video to find one nugget of insight. We have terabytes of video files collecting digital dust.
+
+Julie: So the data is there, but it's not accessible?
+
+Alex: Exactly. It's a "write-only" database. We put data in, but we never get it out. I tried hiring a freelancer to transcribe them, but the quality was poor and it took too long. By the time we got the text back, the sprint was over and we had already made the decision.
+
+Julie: That sounds incredibly frustrating. What's the biggest impact of that on your product decisions?
+
+Alex: We end up making decisions based on who shouted the loudest in the last meeting, rather than what the data actually says. It's frustrating because I know the answers are in those recordings. I remember a customer explicitly telling us they wouldn't pay for feature X, but I couldn't find the clip in time to stop the dev team from building it. We wasted three weeks of engineering time.
+
+Julie: Wow, that's a real cost. If you had a tool that could instantly surface those answers, what would that mean for you?
+
+Alex: It would mean I could actually sleep at night knowing we're building the right thing. And I could prove it to my stakeholders with actual clips, not just my opinion. Imagine being in a roadmap meeting and someone says "Customers don't care about privacy," and I can pull up a highlight reel of 10 different customers saying "Privacy is our #1 concern" in seconds. That ends the argument right there.
+
+Julie: What about the rest of your team? Do they listen to the calls?
+
+Alex: Rarely. The designers sometimes join, but the engineers almost never do. They just want the requirements. If I could send them a 2-minute summary video of the user pain points, they would actually watch that. It would build so much more empathy than a Jira ticket ever could.

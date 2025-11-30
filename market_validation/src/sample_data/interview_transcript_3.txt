@@ -1,0 +1,29 @@
+Interviewee: Michael Ross
+Role: Product Lead
+Company: Zoom (Santa Barbara)
+Date: 2023-11-22
+Interviewer: Uma Kamath
+
+Uma: Michael, you have a large team. How do you share market insights across the org?
+
+Michael: Poorly. We have a Slack channel where people post snippets, but it's ephemeral. It scrolls away and is forgotten. We have a "Voice of the Customer" meeting once a month, but attendance is dropping. People are busy.
+
+Uma: Do you have a central repository?
+
+Michael: We have Confluence, but nobody reads it. It's where documents go to die. I write these beautiful research reports, spend days on them, and I can see the analytics - 3 people view them. It's demoralizing. I need something dynamic.
+
+Uma: What do you mean by dynamic?
+
+Michael: I mean, if I'm working on a feature for "screen sharing," I want to see every mention of "screen sharing" from the last 50 interviews, instantly. I don't want to search through 50 documents. I want a feed. Like a Twitter feed, but for customer insights.
+
+Uma: So granular search and aggregation?
+
+Michael: Yes. And I want to be able to create a highlight reel. "Here are 5 customers struggling with screen sharing." That's powerful. That moves the needle with execs. When I play a video of a user struggling, the room goes silent. That's the moment change happens.
+
+Uma: How much time do you spend creating those highlight reels today?
+
+Michael: Hours. I have to download the video, put it in iMovie, cut the clips, stitch them together... it's a nightmare. I usually just don't do it because it's too much friction. If your tool could do that automatically? Take my money.
+
+Uma: What about integration? Where does this data need to live?
+
+Michael: Ideally, it pushes into Productboard. That's where our roadmap lives. If I can link a feature idea in Productboard directly to 5 video clips in your tool, that validates the feature request instantly. That's the holy grail for us.
