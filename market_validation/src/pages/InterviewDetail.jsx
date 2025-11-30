@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Play, Pause, SkipBack, SkipForward, FileText, Sparkles, Tag, ChevronLeft, Plus, Download, Share2 } from 'lucide-react';
-import { mockInterviews } from '../services/mockData';
+import { useData } from '../context/DataContext';
 import { generateSummary, extractThemes } from '../services/aiService';
 
 const InterviewDetail = () => {
@@ -14,21 +14,17 @@ const InterviewDetail = () => {
     const [newTag, setNewTag] = useState('');
     const [isTagging, setIsTagging] = useState(false);
 
+    // Get data from context
+    const { findInterviewById, updateInterview, isLoading } = useData();
+
     useEffect(() => {
-        // Check mock interviews first
-        let found = mockInterviews.find(i => i.id === id);
-        
-        // If not found, check localStorage for user-created interviews
-        if (!found) {
-            const savedInterviews = localStorage.getItem('user_interviews');
-            const userInterviews = savedInterviews ? JSON.parse(savedInterviews) : [];
-            found = userInterviews.find(i => i.id === id);
+        if (!isLoading) {
+            const found = findInterviewById(id);
+            if (found) {
+                setInterview(found);
+            }
         }
-        
-        if (found) {
-            setInterview(found);
-        }
-    }, [id]);
+    }, [id, isLoading, findInterviewById]);
 
     const handleGenerateInsights = async () => {
         if (!interview) return;

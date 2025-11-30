@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { useNavigate } from 'react-router-dom';
-import { mockInterviews, mockTrends, mockStats, mockDemographics, mockAgeDistribution, mockGenderDistribution, mockHypotheses } from '../services/mockData';
+import { useData } from '../context/DataContext';
 import { PlayCircle, FileText, MoreHorizontal, TrendingUp, Sparkles, Calendar, ChevronLeft, ChevronRight, Clock, Lightbulb, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
@@ -10,21 +10,32 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const Dashboard = () => {
     const navigate = useNavigate();
     const [demographicView, setDemographicView] = useState('role'); // 'role', 'age', 'gender'
-    const [allInterviews, setAllInterviews] = useState(mockInterviews);
+    
+    // Get data from context
+    const { 
+        interviews: allInterviews, 
+        hypotheses, 
+        stats, 
+        demographics, 
+        ageDistribution, 
+        genderDistribution,
+        isLoading 
+    } = useData();
 
-    useEffect(() => {
-        // Load user interviews from localStorage and combine with mock data
-        const savedInterviews = localStorage.getItem('user_interviews');
-        const userInterviews = savedInterviews ? JSON.parse(savedInterviews) : [];
-        setAllInterviews([...userInterviews, ...mockInterviews]);
-    }, []);
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-slate-400">Loading...</div>
+            </div>
+        );
+    }
 
     // Chart Data Configuration
     const donutData = {
         labels: ['Completed', 'In Progress', 'Scheduled'],
         datasets: [
             {
-                data: [mockStats.completed, mockStats.inProgress, mockStats.scheduled],
+                data: [stats.completed || 0, stats.inProgress || 0, stats.scheduled || 0],
                 backgroundColor: ['#4F46E5', '#F59E0B', '#E5E7EB'],
                 borderWidth: 0,
             },
@@ -35,16 +46,16 @@ const Dashboard = () => {
         let data, labels, label;
         switch (demographicView) {
             case 'age':
-                data = mockAgeDistribution;
+                data = ageDistribution || {};
                 label = 'Age Group';
                 break;
             case 'gender':
-                data = mockGenderDistribution;
+                data = genderDistribution || {};
                 label = 'Gender';
                 break;
             case 'role':
             default:
-                data = mockDemographics;
+                data = demographics || {};
                 label = 'Role';
                 break;
         }
@@ -138,7 +149,7 @@ const Dashboard = () => {
                     <h3 className="text-lg font-bold text-white">Your Hypotheses</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {mockHypotheses.map((hypothesis) => {
+                    {hypotheses.map((hypothesis) => {
                         const total = hypothesis.supportingEvidence + hypothesis.againstEvidence;
                         const supportRatio = total > 0 ? (hypothesis.supportingEvidence / total) * 100 : 0;
                         
@@ -250,24 +261,39 @@ const Dashboard = () => {
                 <div className="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
                     <h3 className="font-semibold text-white mb-4">Top Interviewers</h3>
                     <div className="space-y-4">
-                        {[
-                            { name: 'Alex M.', count: 8, rank: 1 },
-                            { name: 'Sarah J.', count: 6, rank: 2 },
-                            { name: 'Mike T.', count: 4, rank: 3 },
-                        ].map((user) => (
-                            <div key={user.name} className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${user.rank === 1 ? 'bg-yellow-500/10 text-yellow-500 ring-1 ring-yellow-500/20' :
-                                        user.rank === 2 ? 'bg-slate-700 text-slate-300 ring-1 ring-slate-600' :
-                                            'bg-orange-500/10 text-orange-500 ring-1 ring-orange-500/20'
-                                        }`}>
-                                        {user.rank}
-                                    </span>
-                                    <span className="text-sm text-slate-300 font-medium">{user.name}</span>
+                        {(() => {
+                            // Compute top interviewers from interviews data
+                            const interviewerCounts = allInterviews.reduce((acc, interview) => {
+                                const name = interview.interviewer || 'Unknown';
+                                acc[name] = (acc[name] || 0) + 1;
+                                return acc;
+                            }, {});
+                            
+                            const topInterviewers = Object.entries(interviewerCounts)
+                                .map(([name, count]) => ({ name, count }))
+                                .sort((a, b) => b.count - a.count)
+                                .slice(0, 3)
+                                .map((item, idx) => ({ ...item, rank: idx + 1 }));
+                            
+                            if (topInterviewers.length === 0) {
+                                return <p className="text-sm text-slate-500 italic">No interviews yet.</p>;
+                            }
+                            
+                            return topInterviewers.map((user) => (
+                                <div key={user.name} className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${user.rank === 1 ? 'bg-yellow-500/10 text-yellow-500 ring-1 ring-yellow-500/20' :
+                                            user.rank === 2 ? 'bg-slate-700 text-slate-300 ring-1 ring-slate-600' :
+                                                'bg-orange-500/10 text-orange-500 ring-1 ring-orange-500/20'
+                                            }`}>
+                                            {user.rank}
+                                        </span>
+                                        <span className="text-sm text-slate-300 font-medium">{user.name}</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">{user.count}</span>
                                 </div>
-                                <span className="text-sm font-semibold text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">{user.count}</span>
-                            </div>
-                        ))}
+                            ));
+                        })()}
                     </div>
                 </div>
 

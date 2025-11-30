@@ -1,31 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Brain, Plus, CheckCircle2, XCircle, Sparkles, RefreshCw, ChevronRight, Trash2 } from 'lucide-react';
 import { validateHypotheses } from '../services/aiService';
-import { mockInterviews, mockHypotheses } from '../services/mockData';
+import { useData } from '../context/DataContext';
 
 const ReasoningLab = () => {
-    const [hypotheses, setHypotheses] = useState(mockHypotheses);
+    const { 
+        hypotheses: storedHypotheses, 
+        interviews, 
+        setAllHypotheses, 
+        addReport, 
+        isLoading 
+    } = useData();
+    
+    const [hypotheses, setHypotheses] = useState([]);
     const [newHypothesis, setNewHypothesis] = useState('');
     const [isValidating, setIsValidating] = useState(false);
 
-    const addHypothesis = () => {
+    // Sync local state with stored hypotheses
+    useEffect(() => {
+        if (!isLoading) {
+            setHypotheses(storedHypotheses);
+        }
+    }, [storedHypotheses, isLoading]);
+
+    const handleAddHypothesis = () => {
         if (!newHypothesis.trim()) return;
-        setHypotheses([
+        const updated = [
             ...hypotheses,
             { id: Date.now(), text: newHypothesis, status: 'unverified', evidence: [], supportingEvidence: 0, againstEvidence: 0 }
-        ]);
+        ];
+        setHypotheses(updated);
+        setAllHypotheses(updated); // Persist to storage
         setNewHypothesis('');
     };
 
-    const deleteHypothesis = (id) => {
-        setHypotheses(hypotheses.filter(h => h.id !== id));
+    const handleDeleteHypothesis = (id) => {
+        const updated = hypotheses.filter(h => h.id !== id);
+        setHypotheses(updated);
+        setAllHypotheses(updated); // Persist to storage
     };
 
     const handleValidate = async () => {
         setIsValidating(true);
         try {
-            // Get all transcripts
-            const transcripts = mockInterviews.map(i => ({
+            // Get all transcripts from context
+            const transcripts = interviews.map(i => ({
                 id: i.id,
                 interviewee: i.interviewee,
                 text: i.transcript
@@ -56,18 +75,15 @@ const ReasoningLab = () => {
             });
 
             setHypotheses(updatedHypotheses);
+            setAllHypotheses(updatedHypotheses); // Persist to storage
 
-            // Save report to localStorage
+            // Save report using context
             const newReport = {
                 id: Date.now(),
                 date: new Date().toISOString(),
                 hypotheses: updatedHypotheses
             };
-
-            const savedReports = localStorage.getItem('market_validation_reports');
-            const reports = savedReports ? JSON.parse(savedReports) : [];
-            reports.push(newReport);
-            localStorage.setItem('market_validation_reports', JSON.stringify(reports));
+            addReport(newReport);
         } catch (error) {
             console.error("Validation failed:", error);
             alert(`Validation failed: ${error.message}`);
@@ -75,6 +91,14 @@ const ReasoningLab = () => {
             setIsValidating(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-slate-400">Loading...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-5xl mx-auto">
@@ -113,12 +137,12 @@ const ReasoningLab = () => {
                         type="text"
                         value={newHypothesis}
                         onChange={(e) => setNewHypothesis(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && addHypothesis()}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddHypothesis()}
                         className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         placeholder="e.g. Customers are willing to pay more for advanced reporting..."
                     />
                     <button
-                        onClick={addHypothesis}
+                        onClick={handleAddHypothesis}
                         className="px-6 py-3 bg-slate-800 text-white rounded-lg font-medium hover:bg-slate-700 border border-slate-700 transition-colors flex items-center gap-2"
                     >
                         <Plus className="w-4 h-4" />
@@ -150,7 +174,7 @@ const ReasoningLab = () => {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => deleteHypothesis(hypothesis.id)}
+                                    onClick={() => handleDeleteHypothesis(hypothesis.id)}
                                     className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
                                     title="Delete hypothesis"
                                 >

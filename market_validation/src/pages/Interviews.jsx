@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockInterviews } from '../services/mockData';
+import { useData } from '../context/DataContext';
 import { Search, Filter, MoreHorizontal, ChevronRight, Plus } from 'lucide-react';
 
 const Interviews = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [allInterviews, setAllInterviews] = useState(mockInterviews);
+    
+    // Get interviews from context
+    const { interviews: allInterviews, isLoading } = useData();
 
-    useEffect(() => {
-        // Load user interviews from localStorage and combine with mock data
-        const savedInterviews = localStorage.getItem('user_interviews');
-        const userInterviews = savedInterviews ? JSON.parse(savedInterviews) : [];
-        setAllInterviews([...userInterviews, ...mockInterviews]);
-    }, []);
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-slate-400">Loading...</div>
+            </div>
+        );
+    }
 
     const filteredInterviews = allInterviews.filter(interview =>
         interview.interviewee.toLowerCase().includes(searchTerm.toLowerCase()) ||

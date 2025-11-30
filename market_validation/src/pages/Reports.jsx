@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Calendar, ChevronRight, Search } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 const Reports = () => {
-    const [reports, setReports] = useState([]);
+    const { reports: rawReports, isLoading } = useData();
+    
+    // Sort reports by date descending
+    const reports = [...rawReports].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    useEffect(() => {
-        const savedReports = localStorage.getItem('market_validation_reports');
-        if (savedReports) {
-            try {
-                const parsedReports = JSON.parse(savedReports);
-                // Sort by date descending
-                parsedReports.sort((a, b) => new Date(b.date) - new Date(a.date));
-                setReports(parsedReports);
-            } catch (e) {
-                console.error("Failed to parse reports", e);
-            }
-        }
-    }, []);
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-slate-400">Loading...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-5xl mx-auto">

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, FileAudio, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 const NewInterview = () => {
     const navigate = useNavigate();
+    const { addInterview } = useData();
     const [dragActive, setDragActive] = useState(false);
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -89,11 +91,8 @@ const NewInterview = () => {
             sentiment: ''
         };
 
-        // Save to localStorage
-        const savedInterviews = localStorage.getItem('user_interviews');
-        const userInterviews = savedInterviews ? JSON.parse(savedInterviews) : [];
-        userInterviews.push(newInterview);
-        localStorage.setItem('user_interviews', JSON.stringify(userInterviews));
+        // Save using the data context
+        addInterview(newInterview);
 
         // Simulate processing delay
         setTimeout(() => {

@@ -1,27 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, CheckCircle2, XCircle, FileText } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 const ReportDetail = () => {
     const { id } = useParams();
-    const [report, setReport] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { findReportById, isLoading } = useData();
+    
+    const report = findReportById(id);
 
-    useEffect(() => {
-        const savedReports = localStorage.getItem('market_validation_reports');
-        if (savedReports) {
-            try {
-                const parsedReports = JSON.parse(savedReports);
-                const foundReport = parsedReports.find(r => r.id.toString() === id);
-                setReport(foundReport);
-            } catch (e) {
-                console.error("Failed to parse reports", e);
-            }
-        }
-        setLoading(false);
-    }, [id]);
-
-    if (loading) {
+    if (isLoading) {
         return <div className="text-center py-20 text-slate-500">Loading report...</div>;
     }
 

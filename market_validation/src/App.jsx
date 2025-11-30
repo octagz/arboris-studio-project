@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { DataProvider } from './context/DataContext';
 import Layout from './components/Layout';
 import Login from './components/Login';
 import Dashboard from './pages/Dashboard';
@@ -36,20 +37,22 @@ function App() {
   }
 
   return (
-    <Router>
-      <Layout onLogout={handleLogout}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/new-interview" element={<NewInterview />} />
-          <Route path="/interview/:id" element={<InterviewDetail />} />
-          <Route path="/interviews" element={<Interviews />} />
-          <Route path="/reasoning-lab" element={<ReasoningLab />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/reports/:id" element={<ReportDetail />} />
-          <Route path="/settings" element={<div className="text-center py-20 text-gray-500">Settings (Coming Soon)</div>} />
-        </Routes>
-      </Layout>
-    </Router>
+    <DataProvider>
+      <Router>
+        <Layout onLogout={handleLogout}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/new-interview" element={<NewInterview />} />
+            <Route path="/interview/:id" element={<InterviewDetail />} />
+            <Route path="/interviews" element={<Interviews />} />
+            <Route path="/reasoning-lab" element={<ReasoningLab />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/reports/:id" element={<ReportDetail />} />
+            <Route path="/settings" element={<div className="text-center py-20 text-gray-500">Settings (Coming Soon)</div>} />
+          </Routes>
+        </Layout>
+      </Router>
+    </DataProvider>
   );
 }
 
