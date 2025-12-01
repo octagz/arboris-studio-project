@@ -17,28 +17,43 @@ function isMockMode() {
 }
 
 /**
+ * Check if we're in development mode (local)
+ * In dev, we use Vite proxy which requires API key in headers
+ * In production, Vercel serverless function handles the API key
+ */
+function isDevelopment() {
+    return import.meta.env.DEV || import.meta.env.MODE === 'development';
+}
+
+/**
  * Core function to call OpenRouter API
+ * - In development: Uses Vite proxy with API key in headers
+ * - In production: Uses Vercel serverless function (API key handled server-side)
  */
 async function callAI(messages) {
-    const apiKey = getApiKey();
     const model = getModel();
+    const isDev = isDevelopment();
 
-    if (!apiKey) {
-        throw new Error('VITE_OPENROUTER_API_KEY is not set');
+    console.log(`[aiService] Calling ${model} via OpenRouter... (${isDev ? 'dev' : 'prod'} mode)`);
+
+    // Build headers - include API key only in development
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+    if (isDev) {
+        const apiKey = getApiKey();
+        if (!apiKey) {
+            throw new Error('VITE_OPENROUTER_API_KEY is not set. Required for local development.');
+        }
+        headers['Authorization'] = `Bearer ${apiKey}`;
+        headers['HTTP-Referer'] = window.location.origin;
     }
-
-    console.log(`[aiService] Calling ${model} via OpenRouter...`);
 
     const response = await axios.post(
         OPENROUTER_API_URL,
         { model, messages },
-        {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.origin,
-            },
-        }
+        { headers }
     );
 
     console.log('[aiService] Response received');
