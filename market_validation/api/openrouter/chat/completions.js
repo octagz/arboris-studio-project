@@ -9,12 +9,12 @@ export default async function handler(req, res) {
   }
 
   // Get API key from server-side environment variable
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.VITE_OPENROUTER_API_KEY;
   
   if (!apiKey) {
-    console.error('OPENROUTER_API_KEY is not set in Vercel environment variables');
+    console.error('VITE_OPENROUTER_API_KEY is not set in Vercel environment variables');
     return res.status(500).json({ 
-      error: 'OpenRouter API key not configured. Please set OPENROUTER_API_KEY in Vercel environment variables.' 
+      error: 'OpenRouter API key not configured. Please set VITE_OPENROUTER_API_KEY in Vercel environment variables.' 
     });
   }
 
